@@ -26,7 +26,14 @@ import pandas as pd
 import streamlit as st
 
 # 匯入專案自訂之資料庫存取函式 (Step 3)
-from database import DEFAULT_DB_PATH, get_all_forecasts, get_forecasts, get_regions
+from database import (
+    DEFAULT_DB_PATH,
+    get_all_forecasts,
+    get_forecasts,
+    get_regions,
+    init_db,
+    insert_forecasts,
+)
 
 # 設定 matplotlib 支援中文字體顯示 (相容 macOS / Linux / Windows)
 plt.rcParams["font.sans-serif"] = [
@@ -275,8 +282,18 @@ def main() -> None:
         "中央氣象署 CWA Open Data (`F-A0010-001`) 臺灣六大區域未來一週氣溫預報儀表板"
     )
 
-    # 檢查 SQLite 資料庫是否存在 (Step 4 錯誤處理)
+    # 檢查 SQLite 資料庫是否存在 (若不存在則嘗試自動從已入庫之 weather_data.csv 建立)
     db_file = DEFAULT_DB_PATH
+    if not db_file.is_file():
+        csv_backup = Path("weather_data.csv")
+        if csv_backup.is_file():
+            try:
+                init_db(db_file)
+                df_backup = pd.read_csv(csv_backup)
+                insert_forecasts(df_backup, db_file)
+            except Exception:
+                pass
+
     if not db_file.is_file():
         st.error(
             "⚠️ **找不到資料庫檔案 (`data.db`)！**\n\n"

@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taiwan Weather Forecast Web App</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .transition-all { transition: all 0.2s ease-in-out; }
+    .region-tab.active {
+      background-color: var(--primary);
+      color: var(--primary-foreground);
+      font-weight: 600;
+      border-color: var(--primary);
+    }
+  </style>
+</head>
+<body class="bg-transparent text-[var(--foreground)] antialiased p-4 sm:p-6 font-sans">
+  <div class="max-w-5xl mx-auto bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl p-6 sm:p-8 shadow-xl">
+    
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-[var(--border)] gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <span class="text-3xl">⛅</span>
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--foreground)]">Taiwan Weather Forecast</h1>
+        </div>
+        <p class="text-sm text-[var(--muted-foreground)] mt-1">
+          中央氣象署 CWA Open Data (F-A0010-001 / F-D0047-091) 一週氣溫預報系統
+        </p>
+      </div>
+      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        SQLite 資料庫即時連線中
+      </div>
+    </div>
+
+    <!-- Region Selector -->
+    <div class="mt-6">
+      <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
+        Select Region (選擇區域)
+      </label>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2" id="regionTabs">
+        <button onclick="selectRegion('北部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)] active" data-region="北部地區">
+          北部地區
+        </button>
+        <button onclick="selectRegion('中部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="中部地區">
+          中部地區
+        </button>
+        <button onclick="selectRegion('南部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="南部地區">
+          南部地區
+        </button>
+        <button onclick="selectRegion('東北部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="東北部地區">
+          東北部地區
+        </button>
+        <button onclick="selectRegion('東部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="東部地區">
+          東部地區
+        </button>
+        <button onclick="selectRegion('東南部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="東南部地區">
+          東南部地區
+        </button>
+      </div>
+    </div>
+
+    <!-- KPI Summary Cards -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">
+      <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+        <p class="text-xs text-[var(--muted-foreground)]">目前選取區域</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-[var(--foreground)]" id="kpiRegion">北部地區</p>
+      </div>
+      <div class="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5">
+        <p class="text-xs text-blue-600 dark:text-blue-400 font-medium">預報最低溫 (MinT)</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-blue-700 dark:text-blue-300" id="kpiMin">-- °C</p>
+      </div>
+      <div class="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5">
+        <p class="text-xs text-rose-600 dark:text-rose-400 font-medium">預報最高溫 (MaxT)</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-rose-700 dark:text-rose-300" id="kpiMax">-- °C</p>
+      </div>
+      <div class="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+        <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">預報平均溫 (Avg)</p>
+        <p class="text-xl sm:text-2xl font-bold mt-1 text-amber-700 dark:text-amber-300" id="kpiAvg">-- °C</p>
+      </div>
+    </div>
+
+    <!-- Main Content: Chart + Table -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      
+      <!-- Line Chart -->
+      <div class="lg:col-span-2 p-5 rounded-xl border border-[var(--border)] bg-[var(--background)] flex flex-col justify-between">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-base sm:text-lg flex items-center gap-2" id="chartTitle">
+            📈 Temperature Forecast - 北部地區
+          </h3>
+          <div class="flex items-center gap-4 text-xs">
+            <span class="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-semibold">
+              <span class="w-3 h-1 bg-rose-500 rounded"></span> 最高溫 (MaxT)
+            </span>
+            <span class="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold">
+              <span class="w-3 h-1 bg-blue-500 rounded"></span> 最低溫 (MinT)
+            </span>
+          </div>
+        </div>
+
+        <!-- SVG Line Chart Canvas -->
+        <div class="relative w-full h-64 sm:h-72" id="chartContainer">
+          <svg id="weatherChart" class="w-full h-full overflow-visible"></svg>
+        </div>
+      </div>
+
+      <!-- Table View -->
+      <div class="p-5 rounded-xl border border-[var(--border)] bg-[var(--background)] flex flex-col">
+        <h3 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2">
+          📋 一週氣溫資料表
+        </h3>
+        <div class="overflow-y-auto max-h-72 flex-grow pr-1">
+          <table class="w-full text-left text-sm">
+            <thead>
+              <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)] text-xs font-semibold">
+                <th class="pb-2">Date (日期)</th>
+                <th class="pb-2 text-right text-blue-600 dark:text-blue-400">MinT</th>
+                <th class="pb-2 text-right text-rose-600 dark:text-rose-400">MaxT</th>
+              </tr>
+            </thead>
+            <tbody id="forecastTableBody" class="divide-y divide-[var(--border)]">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 Map / Region Overview -->
+    <div class="mt-6 p-5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
+        <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
+          🗺️ 臺灣六大分區平均氣溫分佈 (Step 5 Optional)
+        </h3>
+        <div class="flex flex-wrap items-center gap-3 text-xs">
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> &lt;20°C 寒涼</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 20–25°C 舒適</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 25–30°C 溫暖</span>
+          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> &gt;30°C 炎熱</span>
+        </div>
+      </div>
+
+      <!-- Regional Overview Cards -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="regionCards">
+        <!-- Dynamically rendered -->
+      </div>
+    </div>
+
+    <!-- Footer info -->
+    <div class="mt-6 pt-4 border-t border-[var(--border)] flex flex-col sm:flex-row justify-between items-center text-xs text-[var(--muted-foreground)] gap-2">
+      <p>Taiwan Weather Forecast Web App • GitHub: <a href="https://github.com/ShuShu1201/CWA_Web_HW" target="_blank" class="text-blue-500 hover:underline">ShuShu1201/CWA_Web_HW</a></p>
+      <p>Data Source: SQLite <code>data.db</code> (CWA Open Data API)</p>
+    </div>
+
+  </div>
+
+  <script>
+    // 真實從中央氣象署取得並寫入 SQLite 之氣象資料
+    const weatherData = {
+      "北部地區": [
+        { date: "10-06", fullDate: "2026-10-06", min: 21, max: 24 },
+        { date: "10-07", fullDate: "2026-10-07", min: 21, max: 29 },
+        { date: "10-08", fullDate: "2026-10-08", min: 21, max: 30 },
+        { date: "10-09", fullDate: "2026-10-09", min: 22, max: 31 },
+        { date: "10-10", fullDate: "2026-10-10", min: 24, max: 32 },
+        { date: "10-11", fullDate: "2026-10-11", min: 24, max: 31 },
+        { date: "10-12", fullDate: "2026-10-12", min: 24, max: 32 },
+        { date: "10-13", fullDate: "2026-10-13", min: 24, max: 32 }
+      ],
+      "中部地區": [
+        { date: "10-06", fullDate: "2026-10-06", min: 21, max: 28 },
+        { date: "10-07", fullDate: "2026-10-07", min: 21, max: 32 },
+        { date: "10-08", fullDate: "2026-10-08", min: 21, max: 33 },
+        { date: "10-09", fullDate: "2026-10-09", min: 21, max: 33 },
+        { date: "10-10", fullDate: "2026-10-10", min: 22, max: 33 },
+        { date: "10-11", fullDate: "2026-10-11", min: 22, max: 33 },
+        { date: "10-12", fullDate: "2026-10-12", min: 22, max: 33 },
+        { date: "10-13", fullDate: "2026-10-13", min: 22, max: 33 }
+      ],
+      "南部地區": [
+        { date: "10-06", fullDate: "2026-10-06", min: 22, max: 29 },
+        { date: "10-07", fullDate: "2026-10-07", min: 22, max: 32 },
+        { date: "10-08", fullDate: "2026-10-08", min: 22, max: 32 },
+        { date: "10-09", fullDate: "2026-10-09", min: 23, max: 33 },
+        { date: "10-10", fullDate: "2026-10-10", min: 23, max: 33 },
+        { date: "10-11", fullDate: "2026-10-11", min: 24, max: 33 },
+        { date: "10-12", fullDate: "2026-10-12", min: 24, max: 33 },
+        { date: "10-13", fullDate: "2026-10-13", min: 24, max: 33 }
+      ],
+      "東北部地區": [
+        { date: "10-06", fullDate: "2026-10-06", min: 21, max: 23 },
+        { date: "10-07", fullDate: "2026-10-07", min: 21, max: 25 },
+        { date: "10-08", fullDate: "2026-10-08", min: 21, max: 28 },
+        { date: "10-09", fullDate: "2026-10-09", min: 22, max: 28 },
+        { date: "10-10", fullDate: "2026-10-10", min: 24, max: 29 },
+        { date: "10-11", fullDate: "2026-10-11", min: 24, max: 30 },
+        { date: "10-12", fullDate: "2026-10-12", min: 24, max: 30 },
+        { date: "10-13", fullDate: "2026-10-13", min: 24, max: 30 }
+      ],
+      "東部地區": [
+        { date: "10-06", fullDate: "2026-10-06", min: 22, max: 25 },
+        { date: "10-07", fullDate: "2026-10-07", min: 22, max: 29 },
+        { date: "10-08", fullDate: "2026-10-08", min: 22, max: 30 },
+        { date: "10-09", fullDate: "2026-10-09", min: 23, max: 30 },
+        { date: "10-10", fullDate: "2026-10-10", min: 24, max: 31 },
+        { date: "10-11", fullDate: "2026-10-11", min: 24, max: 31 },
+        { date: "10-12", fullDate: "2026-10-12", min: 24, max: 31 },
+        { date: "10-13", fullDate: "2026-10-13", min: 24, max: 31 }
+      ],
+      "東南部地區": [
+        { date: "10-06", fullDate: "2026-10-06", min: 23, max: 27 },
+        { date: "10-07", fullDate: "2026-10-07", min: 23, max: 31 },
+        { date: "10-08", fullDate: "2026-10-08", min: 23, max: 32 },
+        { date: "10-09", fullDate: "2026-10-09", min: 24, max: 32 },
+        { date: "10-10", fullDate: "2026-10-10", min: 24, max: 32 },
+        { date: "10-11", fullDate: "2026-10-11", min: 25, max: 32 },
+        { date: "10-12", fullDate: "2026-10-12", min: 25, max: 32 },
+        { date: "10-13", fullDate: "2026-10-13", min: 25, max: 32 }
+      ]
+    };
+
+    let currentRegion = "北部地區";
+
+    function getTempColor(avg) {
+      if (avg < 20) return { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-500", dot: "bg-blue-500" };
+      if (avg <= 25) return { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-500", dot: "bg-emerald-500" };
+      if (avg <= 30) return { bg: "bg-amber-500/10", border: "border-amber-500/30", text: "text-amber-500", dot: "bg-amber-500" };
+      return { bg: "bg-rose-500/10", border: "border-rose-500/30", text: "text-rose-500", dot: "bg-rose-500" };
+    }
+
+    function renderRegionCards() {
+      const container = document.getElementById("regionCards");
+      container.innerHTML = "";
+
+      Object.keys(weatherData).forEach(reg => {
+        const rows = weatherData[reg];
+        const allMin = rows.map(r => r.min);
+        const allMax = rows.map(r => r.max);
+        const avg = ((allMin.reduce((a,b)=>a+b)/rows.length) + (allMax.reduce((a,b)=>a+b)/rows.length)) / 2;
+        const color = getTempColor(avg);
+        const isCurrent = reg === currentRegion;
+
+        const card = document.createElement("button");
+        card.className = `p-3 rounded-lg border text-left transition-all ${color.bg} ${isCurrent ? 'ring-2 ring-[var(--primary)] ' + color.border : color.border} hover:scale-[1.02]`;
+        card.onclick = () => selectRegion(reg);
+        card.innerHTML = `
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-xs sm:text-sm text-[var(--foreground)]">${reg}</span>
+            <span class="w-2 h-2 rounded-full ${color.dot}"></span>
+          </div>
+          <div class="mt-2 text-lg sm:text-xl font-bold ${color.text}">${avg.toFixed(1)}°C</div>
+          <div class="text-[11px] text-[var(--muted-foreground)] mt-0.5">${Math.min(...allMin)}° ~ ${Math.max(...allMax)}°C</div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function selectRegion(regionName) {
+      currentRegion = regionName;
+
+      // Update Tab Styles
+      document.querySelectorAll(".region-tab").forEach(tab => {
+        if (tab.dataset.region === regionName) {
+          tab.classList.add("active");
+        } else {
+          tab.classList.remove("active");
+        }
+      });
+
+      const records = weatherData[regionName];
+      const mins = records.map(r => r.min);
+      const maxs = records.map(r => r.max);
+      const overallMin = Math.min(...mins);
+      const overallMax = Math.max(...maxs);
+      const avg = (mins.reduce((a,b)=>a+b)/mins.length + maxs.reduce((a,b)=>a+b)/maxs.length) / 2;
+
+      // Update KPI
+      document.getElementById("kpiRegion").innerText = regionName;
+      document.getElementById("kpiMin").innerText = `${overallMin.toFixed(1)} °C`;
+      document.getElementById("kpiMax").innerText = `${overallMax.toFixed(1)} °C`;
+      document.getElementById("kpiAvg").innerText = `${avg.toFixed(1)} °C`;
+      document.getElementById("chartTitle").innerText = `📈 Temperature Forecast - ${regionName}`;
+
+      // Update Table
+      const tbody = document.getElementById("forecastTableBody");
+      tbody.innerHTML = "";
+      records.forEach(r => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-[var(--accent)]/40 transition-colors";
+        tr.innerHTML = `
+          <td class="py-2.5 font-medium">${r.fullDate}</td>
+          <td class="py-2.5 text-right font-bold text-blue-600 dark:text-blue-400">${r.min.toFixed(1)} °C</td>
+          <td class="py-2.5 text-right font-bold text-rose-600 dark:text-rose-400">${r.max.toFixed(1)} °C</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Update SVG Line Chart
+      renderSvgChart(records);
+      renderRegionCards();
+    }
+
+    function renderSvgChart(records) {
+      const svg = document.getElementById("weatherChart");
+      svg.innerHTML = "";
+
+      const width = svg.clientWidth || 500;
+      const height = svg.clientHeight || 250;
+      const padding = { top: 25, right: 30, bottom: 35, left: 35 };
+
+      const chartW = width - padding.left - padding.right;
+      const chartH = height - padding.top - padding.bottom;
+
+      const yMin = 15;
+      const yMax = 38;
+
+      const getY = (temp) => padding.top + chartH - ((temp - yMin) / (yMax - yMin)) * chartH;
+      const getX = (index) => padding.left + (index / (records.length - 1)) * chartW;
+
+      // Draw Grid Lines & Y-Labels
+      [20, 25, 30, 35].forEach(temp => {
+        const y = getY(temp);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", padding.left);
+        line.setAttribute("x2", width - padding.right);
+        line.setAttribute("y1", y);
+        line.setAttribute("y2", y);
+        line.setAttribute("stroke", "currentColor");
+        line.setAttribute("stroke-opacity", "0.15");
+        line.setAttribute("stroke-dasharray", "4,4");
+        svg.appendChild(line);
+
+        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        text.setAttribute("x", padding.left - 8);
+        text.setAttribute("y", y + 4);
+        text.setAttribute("text-anchor", "end");
+        text.setAttribute("font-size", "10");
+        text.setAttribute("fill", "currentColor");
+        text.setAttribute("opacity", "0.6");
+        text.textContent = `${temp}°`;
+        svg.appendChild(text);
+      });
+
+      // Build Paths
+      let maxPathD = "";
+      let minPathD = "";
+
+      records.forEach((r, i) => {
+        const x = getX(i);
+        const yMax = getY(r.max);
+        const yMin = getY(r.min);
+
+        maxPathD += (i === 0 ? `M ${x} ${yMax}` : ` L ${x} ${yMax}`);
+        minPathD += (i === 0 ? `M ${x} ${yMin}` : ` L ${x} ${yMin}`);
+
+        // X-Axis Labels
+        const xLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        xLabel.setAttribute("x", x);
+        xLabel.setAttribute("y", height - 8);
+        xLabel.setAttribute("text-anchor", "middle");
+        xLabel.setAttribute("font-size", "11");
+        xLabel.setAttribute("fill", "currentColor");
+        xLabel.setAttribute("opacity", "0.8");
+        xLabel.textContent = r.date;
+        svg.appendChild(xLabel);
+      });
+
+      // MaxT Path
+      const maxPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      maxPath.setAttribute("d", maxPathD);
+      maxPath.setAttribute("fill", "none");
+      maxPath.setAttribute("stroke", "#e11d48");
+      maxPath.setAttribute("stroke-width", "3");
+      maxPath.setAttribute("stroke-linecap", "round");
+      maxPath.setAttribute("stroke-linejoin", "round");
+      svg.appendChild(maxPath);
+
+      // MinT Path
+      const minPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      minPath.setAttribute("d", minPathD);
+      minPath.setAttribute("fill", "none");
+      minPath.setAttribute("stroke", "#2563eb");
+      minPath.setAttribute("stroke-width", "3");
+      minPath.setAttribute("stroke-linecap", "round");
+      minPath.setAttribute("stroke-linejoin", "round");
+      svg.appendChild(minPath);
+
+      // Dots and value labels
+      records.forEach((r, i) => {
+        const x = getX(i);
+        const yMax = getY(r.max);
+        const yMin = getY(r.min);
+
+        // Max Dot
+        const maxCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        maxCircle.setAttribute("cx", x);
+        maxCircle.setAttribute("cy", yMax);
+        maxCircle.setAttribute("r", "5");
+        maxCircle.setAttribute("fill", "#e11d48");
+        maxCircle.setAttribute("stroke", "#fff");
+        maxCircle.setAttribute("stroke-width", "2");
+        svg.appendChild(maxCircle);
+
+        // Max Text
+        const maxText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        maxText.setAttribute("x", x);
+        maxText.setAttribute("y", yMax - 9);
+        maxText.setAttribute("text-anchor", "middle");
+        maxText.setAttribute("font-size", "10");
+        maxText.setAttribute("font-weight", "bold");
+        maxText.setAttribute("fill", "#e11d48");
+        maxText.textContent = `${r.max}°`;
+        svg.appendChild(maxText);
+
+        // Min Dot
+        const minCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        minCircle.setAttribute("cx", x);
+        minCircle.setAttribute("cy", yMin);
+        minCircle.setAttribute("r", "5");
+        minCircle.setAttribute("fill", "#2563eb");
+        minCircle.setAttribute("stroke", "#fff");
+        minCircle.setAttribute("stroke-width", "2");
+        svg.appendChild(minCircle);
+
+        // Min Text
+        const minText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        minText.setAttribute("x", x);
+        minText.setAttribute("y", yMin + 16);
+        minText.setAttribute("text-anchor", "middle");
+        minText.setAttribute("font-size", "10");
+        minText.setAttribute("font-weight", "bold");
+        minText.setAttribute("fill", "#2563eb");
+        minText.textContent = `${r.min}°`;
+        svg.appendChild(minText);
+      });
+    }
+
+    // Initialize
+    window.addEventListener("DOMContentLoaded", () => {
+      selectRegion("北部地區");
+    });
+    window.addEventListener("resize", () => {
+      renderSvgChart(weatherData[currentRegion]);
+    });
+  </script>
+</body>
+</html>

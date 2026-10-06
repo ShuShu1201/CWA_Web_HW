@@ -1,0 +1,12 @@
+# Core HTTP & Parsing
+requests>=2.31.0
+pandas>=2.0.0
+python-dotenv>=1.0.0
+
+# Dashboard & Data Visualization
+streamlit>=1.30.0
+matplotlib>=3.8.0
+
+# Optional Step 5: Taiwan Map Visualization
+folium>=0.16.0
+streamlit-folium>=0.18.0

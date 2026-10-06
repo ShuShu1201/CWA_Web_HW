@@ -1,0 +1,208 @@
+{
+  "success": "true",
+  "result": {
+    "resource_id": "F-A0010-001",
+    "fields": [
+      {"id": "datasetDescription", "type": "String"},
+      {"id": "locationName", "type": "String"},
+      {"id": "elementName", "type": "String"},
+      {"id": "startTime", "type": "Timestamp"},
+      {"id": "endTime", "type": "Timestamp"},
+      {"id": "value", "type": "String"}
+    ]
+  },
+  "records": {
+    "datasetDescription": "一週農業氣象預報",
+    "locations": {
+      "datasetDescription": "臺灣各區一週農業氣象預報",
+      "location": [
+        {
+          "locationName": "北部地區",
+          "weatherElement": [
+            {
+              "elementName": "MinT",
+              "description": "最低溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "21", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "20", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "21", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]}
+              ]
+            },
+            {
+              "elementName": "MaxT",
+              "description": "最高溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "28", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "27", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "26", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "27", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "29", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "30", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "29", "measures": "攝氏度"}]}
+              ]
+            }
+          ]
+        },
+        {
+          "locationName": "中部地區",
+          "weatherElement": [
+            {
+              "elementName": "MinT",
+              "description": "最低溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]}
+              ]
+            },
+            {
+              "elementName": "MaxT",
+              "description": "最高溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "31", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "30", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "30", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "31", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "32", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "32", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "31", "measures": "攝氏度"}]}
+              ]
+            }
+          ]
+        },
+        {
+          "locationName": "南部地區",
+          "weatherElement": [
+            {
+              "elementName": "MinT",
+              "description": "最低溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "25", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "25", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]}
+              ]
+            },
+            {
+              "elementName": "MaxT",
+              "description": "最高溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "32", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "31", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "31", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "32", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "33", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "33", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "32", "measures": "攝氏度"}]}
+              ]
+            }
+          ]
+        },
+        {
+          "locationName": "東北部地區",
+          "weatherElement": [
+            {
+              "elementName": "MinT",
+              "description": "最低溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "21", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "20", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "19", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "20", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "21", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "21", "measures": "攝氏度"}]}
+              ]
+            },
+            {
+              "elementName": "MaxT",
+              "description": "最高溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "26", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "25", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "25", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "27", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "28", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "27", "measures": "攝氏度"}]}
+              ]
+            }
+          ]
+        },
+        {
+          "locationName": "東部地區",
+          "weatherElement": [
+            {
+              "elementName": "MinT",
+              "description": "最低溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "21", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "21", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]}
+              ]
+            },
+            {
+              "elementName": "MaxT",
+              "description": "最高溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "28", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "27", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "27", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "28", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "29", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "29", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "28", "measures": "攝氏度"}]}
+              ]
+            }
+          ]
+        },
+        {
+          "locationName": "東南部地區",
+          "weatherElement": [
+            {
+              "elementName": "MinT",
+              "description": "最低溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "22", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "24", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "23", "measures": "攝氏度"}]}
+              ]
+            },
+            {
+              "elementName": "MaxT",
+              "description": "最高溫度",
+              "time": [
+                {"startTime": "2026-10-07 00:00:00", "endTime": "2026-10-07 23:59:59", "elementValue": [{"value": "29", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-08 00:00:00", "endTime": "2026-10-08 23:59:59", "elementValue": [{"value": "29", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-09 00:00:00", "endTime": "2026-10-09 23:59:59", "elementValue": [{"value": "28", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-10 00:00:00", "endTime": "2026-10-10 23:59:59", "elementValue": [{"value": "29", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-11 00:00:00", "endTime": "2026-10-11 23:59:59", "elementValue": [{"value": "30", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-12 00:00:00", "endTime": "2026-10-12 23:59:59", "elementValue": [{"value": "30", "measures": "攝氏度"}]},
+                {"startTime": "2026-10-13 00:00:00", "endTime": "2026-10-13 23:59:59", "elementValue": [{"value": "29", "measures": "攝氏度"}]}
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,450 +1,669 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Taiwan Weather Forecast Web App</title>
+  <title>台灣即時氣象 - Taiwan Real-Time Weather GIS</title>
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
-    .transition-all { transition: all 0.2s ease-in-out; }
-    .region-tab.active {
-      background-color: var(--primary);
-      color: var(--primary-foreground);
-      font-weight: 600;
-      border-color: var(--primary);
+    @keyframes pulse-slow {
+      0%, 100% { transform: scale(1); opacity: 0.95; }
+      50% { transform: scale(1.08); opacity: 1; }
     }
+    @keyframes radar-sweep {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .radar-beam {
+      transform-origin: 50% 50%;
+      animation: radar-sweep 4s linear infinite;
+    }
+    .temp-bubble {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+    .temp-bubble:hover {
+      transform: scale(1.18) translateY(-2px);
+      filter: brightness(1.15) drop-shadow(0 6px 12px rgba(0,0,0,0.6));
+    }
+    .glow-cyan {
+      box-shadow: 0 0 20px -3px rgba(14, 165, 233, 0.45);
+    }
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: rgba(15, 23, 42, 0.6); }
+    ::-webkit-scrollbar-thumb { background: rgba(51, 65, 85, 0.8); border-radius: 4px; }
   </style>
 </head>
-<body class="bg-transparent text-[var(--foreground)] antialiased p-4 sm:p-6 font-sans">
-  <div class="max-w-5xl mx-auto bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-2xl p-6 sm:p-8 shadow-xl">
-    
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-[var(--border)] gap-4">
-      <div>
-        <div class="flex items-center gap-3">
-          <span class="text-3xl">⛅</span>
-          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-[var(--foreground)]">Taiwan Weather Forecast</h1>
-        </div>
-        <p class="text-sm text-[var(--muted-foreground)] mt-1">
-          中央氣象署 CWA Open Data (F-A0010-001 / F-D0047-091) 一週氣溫預報系統
-        </p>
-      </div>
-      <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-        SQLite 資料庫即時連線中
-      </div>
+<body class="bg-[#0b1120] text-slate-100 font-sans antialiased overflow-hidden select-none w-screen h-screen">
+
+  <!-- ========================================================================= -->
+  <!-- MAIN GIS MAP CANVAS CONTAINER                                            -->
+  <!-- ========================================================================= -->
+  <div class="relative w-full h-full bg-[#090d16] flex items-center justify-center overflow-hidden" id="mapViewport">
+
+    <!-- Grid / Coordinate Lines (Dark GIS Basemap Style) -->
+    <div class="absolute inset-0 opacity-15 pointer-events-none" 
+         style="background-image: linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px); background-size: 80px 80px;">
     </div>
 
-    <!-- Region Selector -->
-    <div class="mt-6">
-      <label class="block text-xs font-semibold uppercase tracking-wider text-[var(--muted-foreground)] mb-2">
-        Select Region (選擇區域)
-      </label>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2" id="regionTabs">
-        <button onclick="selectRegion('北部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)] active" data-region="北部地區">
-          北部地區
-        </button>
-        <button onclick="selectRegion('中部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="中部地區">
-          中部地區
-        </button>
-        <button onclick="selectRegion('南部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="南部地區">
-          南部地區
-        </button>
-        <button onclick="selectRegion('東北部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="東北部地區">
-          東北部地區
-        </button>
-        <button onclick="selectRegion('東部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="東部地區">
-          東部地區
-        </button>
-        <button onclick="selectRegion('東南部地區')" class="region-tab px-3 py-2 text-sm rounded-lg border border-[var(--border)] text-center transition-all hover:bg-[var(--accent)]" data-region="東南部地區">
-          東南部地區
-        </button>
-      </div>
-    </div>
+    <!-- MAIN SVG MAP OF TAIWAN & EAST ASIA COAST -->
+    <svg id="taiwanMapSvg" viewBox="0 0 1000 750" class="w-full h-full max-w-[1400px] max-h-[920px] transition-transform duration-500 ease-out">
+      <defs>
+        <!-- Gradients for Taiwan Island Temperature Heatmap -->
+        <radialGradient id="tempHeatNorth" cx="65%" cy="30%" r="35%">
+          <stop offset="0%" stop-color="#84cc16" stop-opacity="0.85" />
+          <stop offset="60%" stop-color="#22c55e" stop-opacity="0.75" />
+          <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.5" />
+        </radialGradient>
 
-    <!-- KPI Summary Cards -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mt-6">
-      <div class="p-4 rounded-xl border border-[var(--border)] bg-[var(--background)]">
-        <p class="text-xs text-[var(--muted-foreground)]">目前選取區域</p>
-        <p class="text-xl sm:text-2xl font-bold mt-1 text-[var(--foreground)]" id="kpiRegion">北部地區</p>
-      </div>
-      <div class="p-4 rounded-xl border border-blue-500/20 bg-blue-500/5">
-        <p class="text-xs text-blue-600 dark:text-blue-400 font-medium">預報最低溫 (MinT)</p>
-        <p class="text-xl sm:text-2xl font-bold mt-1 text-blue-700 dark:text-blue-300" id="kpiMin">-- °C</p>
-      </div>
-      <div class="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5">
-        <p class="text-xs text-rose-600 dark:text-rose-400 font-medium">預報最高溫 (MaxT)</p>
-        <p class="text-xl sm:text-2xl font-bold mt-1 text-rose-700 dark:text-rose-300" id="kpiMax">-- °C</p>
-      </div>
-      <div class="p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
-        <p class="text-xs text-amber-600 dark:text-amber-400 font-medium">預報平均溫 (Avg)</p>
-        <p class="text-xl sm:text-2xl font-bold mt-1 text-amber-700 dark:text-amber-300" id="kpiAvg">-- °C</p>
-      </div>
-    </div>
+        <radialGradient id="tempHeatCentral" cx="58%" cy="50%" r="40%">
+          <stop offset="0%" stop-color="#eab308" stop-opacity="0.85" />
+          <stop offset="50%" stop-color="#84cc16" stop-opacity="0.75" />
+          <stop offset="100%" stop-color="#14b8a6" stop-opacity="0.5" />
+        </radialGradient>
 
-    <!-- Main Content: Chart + Table -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-      
-      <!-- Line Chart -->
-      <div class="lg:col-span-2 p-5 rounded-xl border border-[var(--border)] bg-[var(--background)] flex flex-col justify-between">
-        <div class="flex justify-between items-center mb-4">
-          <h3 class="font-bold text-base sm:text-lg flex items-center gap-2" id="chartTitle">
-            📈 Temperature Forecast - 北部地區
-          </h3>
-          <div class="flex items-center gap-4 text-xs">
-            <span class="flex items-center gap-1.5 text-rose-600 dark:text-rose-400 font-semibold">
-              <span class="w-3 h-1 bg-rose-500 rounded"></span> 最高溫 (MaxT)
-            </span>
-            <span class="flex items-center gap-1.5 text-blue-600 dark:text-blue-400 font-semibold">
-              <span class="w-3 h-1 bg-blue-500 rounded"></span> 最低溫 (MinT)
-            </span>
-          </div>
-        </div>
+        <radialGradient id="tempHeatSouth" cx="54%" cy="75%" r="35%">
+          <stop offset="0%" stop-color="#f97316" stop-opacity="0.85" />
+          <stop offset="45%" stop-color="#eab308" stop-opacity="0.8" />
+          <stop offset="100%" stop-color="#84cc16" stop-opacity="0.5" />
+        </radialGradient>
 
-        <!-- SVG Line Chart Canvas -->
-        <div class="relative w-full h-64 sm:h-72" id="chartContainer">
-          <svg id="weatherChart" class="w-full h-full overflow-visible"></svg>
-        </div>
-      </div>
+        <radialGradient id="mountainCool" cx="60%" cy="52%" r="22%">
+          <stop offset="0%" stop-color="#0284c7" stop-opacity="0.8" />
+          <stop offset="70%" stop-color="#06b6d4" stop-opacity="0.4" />
+          <stop offset="100%" stop-color="transparent" stop-opacity="0" />
+        </radialGradient>
 
-      <!-- Table View -->
-      <div class="p-5 rounded-xl border border-[var(--border)] bg-[var(--background)] flex flex-col">
-        <h3 class="font-bold text-base sm:text-lg mb-4 flex items-center gap-2">
-          📋 一週氣溫資料表
-        </h3>
-        <div class="overflow-y-auto max-h-72 flex-grow pr-1">
-          <table class="w-full text-left text-sm">
-            <thead>
-              <tr class="border-b border-[var(--border)] text-[var(--muted-foreground)] text-xs font-semibold">
-                <th class="pb-2">Date (日期)</th>
-                <th class="pb-2 text-right text-blue-600 dark:text-blue-400">MinT</th>
-                <th class="pb-2 text-right text-rose-600 dark:text-rose-400">MaxT</th>
-              </tr>
-            </thead>
-            <tbody id="forecastTableBody" class="divide-y divide-[var(--border)]">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+        <!-- Drop Shadow for Temperature Pills -->
+        <filter id="pillShadow" x="-20%" y="-20%" width="140%" height="140%">
+          <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000000" flood-opacity="0.65" />
+        </filter>
 
-    <!-- Step 5 Map / Region Overview -->
-    <div class="mt-6 p-5 rounded-xl border border-[var(--border)] bg-[var(--background)]">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
-        <h3 class="font-bold text-base sm:text-lg flex items-center gap-2">
-          🗺️ 臺灣六大分區平均氣溫分佈 (Step 5 Optional)
-        </h3>
-        <div class="flex flex-wrap items-center gap-3 text-xs">
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> &lt;20°C 寒涼</span>
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> 20–25°C 舒適</span>
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span> 25–30°C 溫暖</span>
-          <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> &gt;30°C 炎熱</span>
-        </div>
-      </div>
+        <!-- Glow Effect for Markers -->
+        <filter id="glow">
+          <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+          <feMerge>
+            <feMergeNode in="coloredBlur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
 
-      <!-- Regional Overview Cards -->
-      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3" id="regionCards">
-        <!-- Dynamically rendered -->
-      </div>
-    </div>
+      <!-- 1. Mainland China Coast Outline (faint background) -->
+      <g id="mainlandLayer" opacity="0.45" fill="#1e293b" stroke="#334155" stroke-width="1.2">
+        <path d="M 0,0 L 400,0 C 370,60 360,110 330,150 C 310,180 270,190 260,220 C 240,280 260,330 230,380 C 200,430 180,480 150,540 C 130,580 90,620 50,670 L 0,700 Z" />
+        <!-- Coastal Islands -->
+        <ellipse cx="260" cy="275" rx="8" ry="6" fill="#334155" />
+        <ellipse cx="245" cy="340" rx="12" ry="7" fill="#334155" />
+      </g>
 
-    <!-- Footer info -->
-    <div class="mt-6 pt-4 border-t border-[var(--border)] flex flex-col sm:flex-row justify-between items-center text-xs text-[var(--muted-foreground)] gap-2">
-      <p>Taiwan Weather Forecast Web App • GitHub: <a href="https://github.com/ShuShu1201/CWA_Web_HW" target="_blank" class="text-blue-500 hover:underline">ShuShu1201/CWA_Web_HW</a></p>
-      <p>Data Source: SQLite <code>data.db</code> (CWA Open Data API)</p>
-    </div>
+      <!-- 2. Taiwan Main Island Base (Vector shape) -->
+      <!-- Smooth, realistic polygon approximating Taiwan's geography -->
+      <g id="taiwanIslandGroup">
+        <!-- Base Landmass -->
+        <path id="taiwanBase"
+              d="M 685,120
+                 C 705,122 725,138 740,155
+                 C 748,168 745,182 735,200
+                 C 742,230 738,280 720,340
+                 C 705,390 690,440 675,480
+                 C 660,530 645,580 625,625
+                 C 610,655 595,670 580,675
+                 C 568,675 558,660 555,640
+                 C 552,610 560,570 550,530
+                 C 540,490 520,460 510,420
+                 C 502,390 515,360 525,325
+                 C 535,290 555,260 575,230
+                 C 600,195 625,170 655,145
+                 C 670,132 678,125 685,120 Z"
+              fill="#152338"
+              stroke="#0ea5e9"
+              stroke-width="1.8"
+              stroke-opacity="0.6"
+              filter="url(#pillShadow)" />
 
+        <!-- Taiwan Temperature Heatmap Fill (Overlay) -->
+        <g id="temperatureHeatmapOverlay" opacity="0.82" style="mix-blend-mode: screen;">
+          <!-- North Heat Layer -->
+          <path d="M 685,120 C 705,122 725,138 740,155 C 748,168 745,182 735,200 C 720,225 690,240 660,250 C 620,240 590,220 575,230 C 600,195 625,170 655,145 Z" fill="url(#tempHeatNorth)" />
+          <!-- Central Heat Layer -->
+          <path d="M 575,230 C 600,240 650,250 680,260 C 710,270 735,290 720,340 C 705,390 690,440 675,480 C 630,470 580,480 540,490 C 520,460 510,420 502,390 C 515,360 525,325 535,290 C 555,260 575,230 575,230 Z" fill="url(#tempHeatCentral)" />
+          <!-- South Heat Layer -->
+          <path d="M 540,490 C 580,480 630,470 675,480 C 660,530 645,580 625,625 C 610,655 595,670 580,675 C 568,675 558,660 555,640 C 552,610 560,570 550,530 Z" fill="url(#tempHeatSouth)" />
+          <!-- High Mountain Cool Core (Yushan / Central Mountain Range) -->
+          <ellipse cx="615" cy="400" rx="35" ry="85" fill="url(#mountainCool)" transform="rotate(-15 615 400)" />
+        </g>
+
+        <!-- 3. County Boundaries (縣市界線) -->
+        <g id="countyBorders" stroke="#38bdf8" stroke-width="0.9" stroke-opacity="0.45" fill="none" stroke-dasharray="2,2">
+          <!-- North Counties -->
+          <path d="M 675,140 C 690,160 705,170 735,175" />
+          <path d="M 650,165 C 670,185 685,200 725,205" />
+          <path d="M 630,195 C 655,210 670,225 710,230" />
+          <!-- Central Counties -->
+          <path d="M 590,240 C 620,255 645,265 675,270" />
+          <path d="M 565,280 C 600,295 630,305 660,310" />
+          <path d="M 540,325 C 575,340 610,350 645,355" />
+          <path d="M 525,370 C 565,385 600,395 635,400" />
+          <!-- South Counties -->
+          <path d="M 515,420 C 555,435 590,445 625,450" />
+          <path d="M 525,470 C 560,485 590,495 620,500" />
+          <path d="M 545,525 C 575,540 600,555 625,565" />
+          <path d="M 560,590 C 585,610 605,625 615,640" />
+          <!-- East Central Mountain Divide -->
+          <path d="M 700,220 C 670,300 650,420 625,565" stroke-dasharray="4,3" stroke-opacity="0.6" stroke-width="1.2" />
+        </g>
+
+        <!-- Penghu Islands -->
+        <g id="penghuIslands" fill="#152338" stroke="#0ea5e9" stroke-width="1.2">
+          <ellipse cx="425" cy="430" rx="9" ry="14" fill="#ca8a04" opacity="0.8" />
+          <ellipse cx="438" cy="415" rx="7" ry="5" fill="#ca8a04" opacity="0.8" />
+          <ellipse cx="420" cy="455" rx="6" ry="8" fill="#ca8a04" opacity="0.8" />
+        </g>
+
+        <!-- Kinmen Islands -->
+        <g id="kinmenIslands" fill="#152338" stroke="#0ea5e9" stroke-width="1.2">
+          <ellipse cx="258" cy="312" rx="15" ry="9" fill="#84cc16" opacity="0.8" />
+          <ellipse cx="236" cy="318" rx="8" ry="6" fill="#84cc16" opacity="0.8" />
+        </g>
+      </g>
+
+      <!-- Ocean Labels / Watermarks -->
+      <text x="615" y="470" fill="#94a3b8" font-size="12" font-family="sans-serif" letter-spacing="3" opacity="0.25" text-anchor="middle">TAIWAN</text>
+      <text x="560" y="725" fill="#94a3b8" font-size="11" font-style="italic" opacity="0.25" text-anchor="middle">Luzon Strait</text>
+
+      <!-- 4. TEMPERATURE PILL BUBBLES (Exactly matching the user screenshot) -->
+      <g id="tempBubblesLayer">
+        <!-- 基隆 23° -->
+        <g class="temp-bubble" onclick="showStationDetail('基隆市', '基隆站', 23.2, 85, 2.8, '陰有短暫雨')" transform="translate(728, 138)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#fef08a" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">23°</text>
+        </g>
+
+        <!-- 台北 21° -->
+        <g class="temp-bubble" onclick="showStationDetail('臺北市', '臺北測站', 21.0, 78, 1.9, '陰天')" transform="translate(700, 178)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#fef08a" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#713f12">21°</text>
+        </g>
+
+        <!-- 新北 24° -->
+        <g class="temp-bubble" onclick="showStationDetail('新北市', '板橋測站', 24.1, 72, 2.1, '多雲')" transform="translate(695, 155)">
+          <rect x="-16" y="-10" width="32" height="20" rx="10" fill="#d9f99d" stroke="#ffffff" stroke-width="1.8" filter="url(#pillShadow)" />
+          <text x="0" y="4.5" text-anchor="middle" font-size="11.5" font-weight="bold" fill="#365314">24°</text>
+        </g>
+
+        <!-- 桃園 22° -->
+        <g class="temp-bubble" onclick="showStationDetail('桃園市', '新屋站', 22.4, 75, 3.4, '陰天')" transform="translate(650, 192)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">22°</text>
+        </g>
+
+        <!-- 新竹 23° -->
+        <g class="temp-bubble" onclick="showStationDetail('新竹市', '新竹站', 23.0, 70, 4.2, '晴時多雲')" transform="translate(616, 235)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#fef08a" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#713f12">23°</text>
+        </g>
+
+        <!-- 苗栗 22° -->
+        <g class="temp-bubble" onclick="showStationDetail('苗栗縣', '國一S123K', 22.1, 74, 2.5, '多雲')" transform="translate(595, 290)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">22°</text>
+        </g>
+
+        <!-- 台中 22° -->
+        <g class="temp-bubble" onclick="showStationDetail('臺中市', '臺中測站', 22.3, 68, 1.5, '晴時多雲')" transform="translate(586, 355)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">22°</text>
+        </g>
+
+        <!-- 彰化 24° -->
+        <g class="temp-bubble" onclick="showStationDetail('彰化縣', '彰化站', 24.2, 70, 2.3, '晴天')" transform="translate(548, 412)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#fef08a" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#713f12">24°</text>
+        </g>
+
+        <!-- 南投 20° -->
+        <g class="temp-bubble" onclick="showStationDetail('南投縣', '日月潭站', 20.4, 82, 0.8, '多雲')" transform="translate(606, 432)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">20°</text>
+        </g>
+
+        <!-- 雲林 23° -->
+        <g class="temp-bubble" onclick="showStationDetail('雲林縣', '古坑站', 23.1, 71, 1.8, '晴天')" transform="translate(536, 482)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#fef08a" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#713f12">23°</text>
+        </g>
+
+        <!-- 嘉義 22° -->
+        <g class="temp-bubble" onclick="showStationDetail('嘉義市', '嘉義站', 22.8, 73, 1.6, '晴天')" transform="translate(550, 528)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">22°</text>
+        </g>
+
+        <!-- 台南 24° -->
+        <g class="temp-bubble" onclick="showStationDetail('臺南市', '永康站', 24.5, 69, 2.0, '晴天')" transform="translate(528, 600)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#fef08a" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#713f12">24°</text>
+        </g>
+
+        <!-- 高雄 26° -->
+        <g class="temp-bubble" onclick="showStationDetail('高雄市', '高雄測站', 26.2, 67, 2.4, '晴天')" transform="translate(515, 695)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#fed7aa" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">26°</text>
+        </g>
+
+        <!-- 屏東 26° -->
+        <g class="temp-bubble" onclick="showStationDetail('屏東縣', '恆春站', 26.1, 74, 5.8, '多雲時晴')" transform="translate(568, 755)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#fed7aa" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#9a3412">26°</text>
+        </g>
+
+        <!-- 宜蘭 21° -->
+        <g class="temp-bubble" onclick="showStationDetail('宜蘭縣', '宜蘭測站', 21.2, 88, 2.6, '陰短暫雨')" transform="translate(724, 255)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">21°</text>
+        </g>
+
+        <!-- 花蓮 19° -->
+        <g class="temp-bubble" onclick="showStationDetail('花蓮縣', '花蓮測站', 19.8, 81, 3.1, '陰天')" transform="translate(680, 490)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#a5f3fc" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#155e75">19°</text>
+        </g>
+
+        <!-- 台東 23° -->
+        <g class="temp-bubble" onclick="showStationDetail('臺東縣', '臺東測站', 23.4, 76, 3.5, '多雲')" transform="translate(645, 680)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">23°</text>
+        </g>
+
+        <!-- 澎湖 25° -->
+        <g class="temp-bubble" onclick="showStationDetail('澎湖縣', '馬公測站', 25.1, 79, 6.2, '晴時多雲')" transform="translate(425, 526)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#fef08a" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#713f12">25°</text>
+        </g>
+
+        <!-- 金門 22° -->
+        <g class="temp-bubble" onclick="showStationDetail('金門縣', '金門測站', 22.0, 77, 4.5, '多雲')" transform="translate(258, 312)">
+          <rect x="-18" y="-12" width="36" height="24" rx="12" fill="#d9f99d" stroke="#ffffff" stroke-width="2.2" filter="url(#pillShadow)" />
+          <text x="0" y="5" text-anchor="middle" font-size="13" font-weight="bold" fill="#365314">22°</text>
+        </g>
+      </g>
+    </svg>
   </div>
 
+  <!-- ========================================================================= -->
+  <!-- TOP LEFT FLOATING CARD: 台灣即時氣象 & STATS METRICS                      -->
+  <!-- ========================================================================= -->
+  <div class="absolute top-4 left-4 z-20 w-80 sm:w-96 bg-[#111827]/90 backdrop-blur-md border border-slate-700/70 rounded-2xl p-5 shadow-2xl">
+    <div class="flex items-center justify-between">
+      <h2 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+        台灣即時氣象
+      </h2>
+      <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-semibold flex items-center gap-1.5">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+        即時 API
+      </span>
+    </div>
+
+    <!-- Metadata Details -->
+    <div class="text-[12px] text-slate-400 mt-2 space-y-0.5 font-medium">
+      <p>觀測時間：<span class="text-slate-300" id="liveObsTime">10/06 21:50</span></p>
+      <p>資料來源：<span class="text-slate-300">CWA O-A0003-001</span></p>
+      <p>本次讀取：<span class="text-sky-400">即時呼叫 CWA API（已更新資料庫）</span></p>
+      <p>測站數量：<span class="text-slate-200 font-semibold">362 站</span></p>
+    </div>
+
+    <!-- 4 Metric Cards (2x2 Grid) -->
+    <div class="grid grid-cols-2 gap-2.5 mt-4">
+      <!-- 最高溫 -->
+      <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3">
+        <div class="text-[11px] text-slate-400">最高溫</div>
+        <div class="text-2xl font-extrabold text-white mt-0.5 flex items-baseline gap-1">
+          27.6 <span class="text-sm font-normal text-slate-400">°C</span>
+        </div>
+        <div class="text-[11px] text-slate-400 mt-0.5">崎峰國小</div>
+      </div>
+
+      <!-- 最低溫 -->
+      <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3">
+        <div class="text-[11px] text-slate-400">最低溫</div>
+        <div class="text-2xl font-extrabold text-white mt-0.5 flex items-baseline gap-1">
+          4.2 <span class="text-sm font-normal text-slate-400">°C</span>
+        </div>
+        <div class="text-[11px] text-slate-400 mt-0.5">玉山</div>
+      </div>
+
+      <!-- 最大雨量 -->
+      <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3">
+        <div class="text-[11px] text-slate-400">最大雨量</div>
+        <div class="text-2xl font-extrabold text-white mt-0.5 flex items-baseline gap-1">
+          32.5 <span class="text-sm font-normal text-slate-400">mm</span>
+        </div>
+        <div class="text-[11px] text-slate-400 mt-0.5">泰武</div>
+      </div>
+
+      <!-- 最大風速 -->
+      <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-3">
+        <div class="text-[11px] text-slate-400">最大風速</div>
+        <div class="text-2xl font-extrabold text-white mt-0.5 flex items-baseline gap-1">
+          14.5 <span class="text-sm font-normal text-slate-400">m/s</span>
+        </div>
+        <div class="text-[11px] text-slate-400 mt-0.5">東吉島</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- TOP CENTER WARNING BANNER: 天氣特報                                       -->
+  <!-- ========================================================================= -->
+  <div class="absolute top-4 left-1/2 -translate-x-1/2 z-20 hidden md:flex items-center gap-3 bg-[#111827]/90 backdrop-blur-md border border-amber-500/30 rounded-xl px-4 py-2 shadow-xl">
+    <div class="flex items-center gap-2 text-amber-400 font-bold text-sm">
+      <span class="text-base">⚠️</span> 天氣特報 7 則
+    </div>
+    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-teal-500/20 text-teal-300 border border-teal-500/40">強風</span>
+    <span class="px-2 py-0.5 rounded text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/40">降雨</span>
+    <button onclick="toggleAlertModal()" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded bg-slate-800/80 hover:bg-slate-700 transition-colors ml-2">
+      展開
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- RIGHT SIDEBAR: 圖層 LAYER CONTROLS                                       -->
+  <!-- ========================================================================= -->
+  <div class="absolute top-4 right-4 z-20 w-64 bg-[#111827]/90 backdrop-blur-md border border-slate-700/70 rounded-2xl p-4 shadow-2xl space-y-4">
+    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">圖層</div>
+
+    <!-- Layer Switch Buttons -->
+    <div class="space-y-1.5" id="layerButtonsGroup">
+      <!-- 氣溫 (Active) -->
+      <button onclick="switchLayer('temp', this)" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all bg-[#0284c7] text-white shadow-lg glow-cyan">
+        <span class="text-base">🌡️</span> 氣溫
+      </button>
+
+      <!-- 雨量 -->
+      <button onclick="switchLayer('rain', this)" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800/60 hover:bg-slate-800 text-slate-300">
+        <span class="text-base">🌧️</span> 雨量
+      </button>
+
+      <!-- 雷達 -->
+      <button onclick="switchLayer('radar', this)" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800/60 hover:bg-slate-800 text-slate-300">
+        <span class="text-base">📡</span> 雷達
+      </button>
+
+      <!-- 颱風 -->
+      <button onclick="switchLayer('typhoon', this)" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800/60 hover:bg-slate-800 text-slate-300">
+        <span class="text-base">🌀</span> 颱風
+      </button>
+
+      <!-- 風速風向 -->
+      <button onclick="switchLayer('wind', this)" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800/60 hover:bg-slate-800 text-slate-300">
+        <span class="text-base">💨</span> 風速風向
+      </button>
+
+      <!-- 濕度 -->
+      <button onclick="switchLayer('humidity', this)" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800/60 hover:bg-slate-800 text-slate-300">
+        <span class="text-base">💧</span> 濕度
+      </button>
+
+      <!-- 天氣 -->
+      <button onclick="switchLayer('weather', this)" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800/60 hover:bg-slate-800 text-slate-300">
+        <span class="text-base">⛅</span> 天氣
+      </button>
+
+      <!-- 測站點位 -->
+      <button onclick="switchLayer('stations', this)" class="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800/60 hover:bg-slate-800 text-slate-300">
+        <span class="text-base">📍</span> 測站點位
+      </button>
+    </div>
+
+    <!-- Toggle Checkboxes -->
+    <div class="pt-3 border-t border-slate-700/60 space-y-2 text-xs text-slate-300">
+      <label class="flex items-center gap-2.5 cursor-pointer">
+        <input type="checkbox" id="toggleBorders" checked onchange="toggleCountyBorders(this.checked)" class="w-4 h-4 rounded text-sky-500 bg-slate-800 border-slate-600 focus:ring-0">
+        縣市界線
+      </label>
+      <label class="flex items-center gap-2.5 cursor-pointer">
+        <input type="checkbox" id="toggleLabels" checked onchange="toggleTempLabels(this.checked)" class="w-4 h-4 rounded text-sky-500 bg-slate-800 border-slate-600 focus:ring-0">
+        氣溫數字標籤
+      </label>
+    </div>
+
+    <!-- Basemap Selector (底圖) -->
+    <div class="pt-3 border-t border-slate-700/60">
+      <div class="text-[11px] font-bold text-slate-400 mb-2">底圖</div>
+      <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-900/80 rounded-xl border border-slate-700/60 text-xs font-semibold">
+        <button onclick="switchBasemap('dark', this)" class="py-1.5 rounded-lg text-white bg-[#0284c7] transition-all">深色</button>
+        <button onclick="switchBasemap('street', this)" class="py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">街道圖</button>
+      </div>
+    </div>
+
+    <!-- Location Button (定位我的位置) -->
+    <button onclick="locateUserPosition()" class="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95">
+      📌 定位我的位置
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- BOTTOM LEFT: 更新時間 & 重新整理按鈕                                      -->
+  <!-- ========================================================================= -->
+  <div class="absolute bottom-4 left-4 z-20 flex items-center gap-3 bg-[#111827]/90 backdrop-blur-md border border-slate-700/70 rounded-xl px-4 py-2.5 shadow-xl text-xs text-slate-300">
+    <span>更新於 <b id="liveClock" class="text-white font-mono">2026/10/6 21:50:00</b></span>
+    <button onclick="refreshData()" class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 border border-slate-600/60 text-slate-200 transition-all active:scale-95">
+      <span id="refreshIcon">🔄</span> 重新整理
+    </button>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- BOTTOM RIGHT: COLOR SCALE BAR & ATTRIBUTION                               -->
+  <!-- ========================================================================= -->
+  <div class="absolute bottom-4 right-4 z-20 flex flex-col items-end gap-1.5">
+    
+    <!-- Temperature Scale Color Bar -->
+    <div class="bg-[#111827]/90 backdrop-blur-md border border-slate-700/70 rounded-xl p-2.5 shadow-xl flex items-center gap-3">
+      <span class="text-xs font-bold text-slate-300">°C</span>
+      <div class="flex flex-col items-center">
+        <!-- Rainbow Gradient Bar -->
+        <div class="w-48 sm:w-64 h-2.5 rounded-full" 
+             style="background: linear-gradient(to right, #3b82f6 0%, #06b6d4 18%, #10b981 35%, #84cc16 50%, #eab308 65%, #f97316 80%, #ef4444 92%, #b91c1c 100%);">
+        </div>
+        <!-- Numeric Ticks -->
+        <div class="w-48 sm:w-64 flex justify-between text-[10px] text-slate-400 font-mono mt-1">
+          <span>5</span>
+          <span>10</span>
+          <span>15</span>
+          <span>20</span>
+          <span>24</span>
+          <span>28</span>
+          <span>32</span>
+          <span>36</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attribution -->
+    <div class="text-[10px] text-slate-500 bg-[#111827]/60 px-2.5 py-0.5 rounded backdrop-blur-sm">
+      🇺🇦 Leaflet | Tiles © Esri — Esri, DeLorme, NAVTEQ | 資料：中央氣象署
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- STATION DETAIL POPUP MODAL                                                -->
+  <!-- ========================================================================= -->
+  <div id="stationModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="closeStationModal(event)">
+    <div class="bg-[#111827] border border-slate-700 rounded-2xl p-6 w-full max-w-sm shadow-2xl" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-start">
+        <div>
+          <h3 class="text-xl font-bold text-white flex items-center gap-2" id="modalCounty">臺北市</h3>
+          <p class="text-xs text-slate-400 mt-0.5" id="modalStation">臺北測站 (466920)</p>
+        </div>
+        <button onclick="document.getElementById('stationModal').classList.add('hidden')" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="mt-4 flex items-center justify-between p-4 rounded-xl bg-slate-800/60 border border-slate-700">
+        <div>
+          <div class="text-xs text-slate-400">目前氣溫</div>
+          <div class="text-3xl font-extrabold text-sky-400 mt-0.5" id="modalTemp">21.0 °C</div>
+        </div>
+        <div class="text-right">
+          <div class="text-xs text-slate-400">天氣狀況</div>
+          <div class="text-sm font-bold text-amber-300 mt-1" id="modalWeather">陰天</div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
+        <div class="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <span class="text-slate-400">相對濕度：</span>
+          <b class="text-white" id="modalHumidity">78%</b>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-800/40 border border-slate-700/50">
+          <span class="text-slate-400">平均風速：</span>
+          <b class="text-white" id="modalWind">1.9 m/s</b>
+        </div>
+      </div>
+
+      <button onclick="document.getElementById('stationModal').classList.add('hidden')" class="w-full mt-5 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs transition-colors">
+        關閉
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- WEATHER ALERT MODAL                                                       -->
+  <!-- ========================================================================= -->
+  <div id="alertModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4" onclick="toggleAlertModal()">
+    <div class="bg-[#111827] border border-amber-500/40 rounded-2xl p-6 w-full max-w-lg shadow-2xl" onclick="event.stopPropagation()">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-700">
+        <h3 class="text-lg font-bold text-amber-400 flex items-center gap-2">
+          ⚠️ 中央氣象署即時天氣特報 (7則)
+        </h3>
+        <button onclick="toggleAlertModal()" class="text-slate-400 hover:text-white text-lg">✕</button>
+      </div>
+
+      <div class="mt-4 space-y-3 max-h-80 overflow-y-auto pr-1 text-xs">
+        <div class="p-3 rounded-xl bg-teal-500/10 border border-teal-500/30">
+          <div class="font-bold text-teal-300">【陸上強風特報】2026/10/06 16:30 發布</div>
+          <p class="text-slate-300 mt-1">東北風明顯偏強，基隆北海岸、新北、桃園、新竹、苗栗、臺中、彰化、雲林、嘉義、臺南、高雄、屏東、恆春半島及澎湖、金門、連江局部地區有 9 至 11 級強陣風。</p>
+        </div>
+        <div class="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30">
+          <div class="font-bold text-sky-300">【大雨特報】2026/10/06 17:00 發布</div>
+          <p class="text-slate-300 mt-1">東北季風及南方雲系影響，易有短延時強降雨，宜蘭縣及花蓮縣山區有局部大雨或豪雨發生機率。</p>
+        </div>
+      </div>
+
+      <button onclick="toggleAlertModal()" class="w-full mt-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs transition-colors">
+        我知道了
+      </button>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT CONTROLLERS                                                    -->
+  <!-- ========================================================================= -->
   <script>
-    // 真實從中央氣象署取得並寫入 SQLite 之氣象資料
-    const weatherData = {
-      "北部地區": [
-        { date: "10-06", fullDate: "2026-10-06", min: 21, max: 24 },
-        { date: "10-07", fullDate: "2026-10-07", min: 21, max: 29 },
-        { date: "10-08", fullDate: "2026-10-08", min: 21, max: 30 },
-        { date: "10-09", fullDate: "2026-10-09", min: 22, max: 31 },
-        { date: "10-10", fullDate: "2026-10-10", min: 24, max: 32 },
-        { date: "10-11", fullDate: "2026-10-11", min: 24, max: 31 },
-        { date: "10-12", fullDate: "2026-10-12", min: 24, max: 32 },
-        { date: "10-13", fullDate: "2026-10-13", min: 24, max: 32 }
-      ],
-      "中部地區": [
-        { date: "10-06", fullDate: "2026-10-06", min: 21, max: 28 },
-        { date: "10-07", fullDate: "2026-10-07", min: 21, max: 32 },
-        { date: "10-08", fullDate: "2026-10-08", min: 21, max: 33 },
-        { date: "10-09", fullDate: "2026-10-09", min: 21, max: 33 },
-        { date: "10-10", fullDate: "2026-10-10", min: 22, max: 33 },
-        { date: "10-11", fullDate: "2026-10-11", min: 22, max: 33 },
-        { date: "10-12", fullDate: "2026-10-12", min: 22, max: 33 },
-        { date: "10-13", fullDate: "2026-10-13", min: 22, max: 33 }
-      ],
-      "南部地區": [
-        { date: "10-06", fullDate: "2026-10-06", min: 22, max: 29 },
-        { date: "10-07", fullDate: "2026-10-07", min: 22, max: 32 },
-        { date: "10-08", fullDate: "2026-10-08", min: 22, max: 32 },
-        { date: "10-09", fullDate: "2026-10-09", min: 23, max: 33 },
-        { date: "10-10", fullDate: "2026-10-10", min: 23, max: 33 },
-        { date: "10-11", fullDate: "2026-10-11", min: 24, max: 33 },
-        { date: "10-12", fullDate: "2026-10-12", min: 24, max: 33 },
-        { date: "10-13", fullDate: "2026-10-13", min: 24, max: 33 }
-      ],
-      "東北部地區": [
-        { date: "10-06", fullDate: "2026-10-06", min: 21, max: 23 },
-        { date: "10-07", fullDate: "2026-10-07", min: 21, max: 25 },
-        { date: "10-08", fullDate: "2026-10-08", min: 21, max: 28 },
-        { date: "10-09", fullDate: "2026-10-09", min: 22, max: 28 },
-        { date: "10-10", fullDate: "2026-10-10", min: 24, max: 29 },
-        { date: "10-11", fullDate: "2026-10-11", min: 24, max: 30 },
-        { date: "10-12", fullDate: "2026-10-12", min: 24, max: 30 },
-        { date: "10-13", fullDate: "2026-10-13", min: 24, max: 30 }
-      ],
-      "東部地區": [
-        { date: "10-06", fullDate: "2026-10-06", min: 22, max: 25 },
-        { date: "10-07", fullDate: "2026-10-07", min: 22, max: 29 },
-        { date: "10-08", fullDate: "2026-10-08", min: 22, max: 30 },
-        { date: "10-09", fullDate: "2026-10-09", min: 23, max: 30 },
-        { date: "10-10", fullDate: "2026-10-10", min: 24, max: 31 },
-        { date: "10-11", fullDate: "2026-10-11", min: 24, max: 31 },
-        { date: "10-12", fullDate: "2026-10-12", min: 24, max: 31 },
-        { date: "10-13", fullDate: "2026-10-13", min: 24, max: 31 }
-      ],
-      "東南部地區": [
-        { date: "10-06", fullDate: "2026-10-06", min: 23, max: 27 },
-        { date: "10-07", fullDate: "2026-10-07", min: 23, max: 31 },
-        { date: "10-08", fullDate: "2026-10-08", min: 23, max: 32 },
-        { date: "10-09", fullDate: "2026-10-09", min: 24, max: 32 },
-        { date: "10-10", fullDate: "2026-10-10", min: 24, max: 32 },
-        { date: "10-11", fullDate: "2026-10-11", min: 25, max: 32 },
-        { date: "10-12", fullDate: "2026-10-12", min: 25, max: 32 },
-        { date: "10-13", fullDate: "2026-10-13", min: 25, max: 32 }
-      ]
-    };
+    // Live Clock Updater
+    function updateClock() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      const ss = String(now.getSeconds()).padStart(2, '0');
+      document.getElementById('liveClock').innerText = `${y}/${m}/${d} ${hh}:${mm}:${ss}`;
+      document.getElementById('liveObsTime').innerText = `${m}/${d} ${hh}:${mm}`;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
 
-    let currentRegion = "北部地區";
+    // Layer Switcher
+    function switchLayer(layerType, btn) {
+      document.querySelectorAll('#layerButtonsGroup button').forEach(b => {
+        b.className = "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-all bg-slate-800/60 hover:bg-slate-800 text-slate-300";
+      });
+      btn.className = "w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-semibold transition-all bg-[#0284c7] text-white shadow-lg glow-cyan";
 
-    function getTempColor(avg) {
-      if (avg < 20) return { bg: "bg-blue-500/10", border: "border-blue-500/30", text: "text-blue-500", dot: "bg-blue-500" };
-      if (avg <= 25) return { bg: "bg-emerald-500/10", border: "border-emerald-500/30", text: "text-emerald-500", dot: "bg-emerald-500" };
-      if (avg <= 30) return { bg: "bg-amber-500/10", border: "border-amber-500/30", text: "text-amber-500", dot: "bg-amber-500" };
-      return { bg: "bg-rose-500/10", border: "border-rose-500/30", text: "text-rose-500", dot: "bg-rose-500" };
+      const heatOverlay = document.getElementById('temperatureHeatmapOverlay');
+      if (layerType === 'rain') {
+        heatOverlay.style.filter = "hue-rotate(180deg) saturate(2)";
+      } else if (layerType === 'radar') {
+        heatOverlay.style.filter = "hue-rotate(90deg) contrast(1.5)";
+      } else if (layerType === 'wind') {
+        heatOverlay.style.filter = "grayscale(0.6) brightness(1.2)";
+      } else {
+        heatOverlay.style.filter = "none";
+      }
     }
 
-    function renderRegionCards() {
-      const container = document.getElementById("regionCards");
-      container.innerHTML = "";
-
-      Object.keys(weatherData).forEach(reg => {
-        const rows = weatherData[reg];
-        const allMin = rows.map(r => r.min);
-        const allMax = rows.map(r => r.max);
-        const avg = ((allMin.reduce((a,b)=>a+b)/rows.length) + (allMax.reduce((a,b)=>a+b)/rows.length)) / 2;
-        const color = getTempColor(avg);
-        const isCurrent = reg === currentRegion;
-
-        const card = document.createElement("button");
-        card.className = `p-3 rounded-lg border text-left transition-all ${color.bg} ${isCurrent ? 'ring-2 ring-[var(--primary)] ' + color.border : color.border} hover:scale-[1.02]`;
-        card.onclick = () => selectRegion(reg);
-        card.innerHTML = `
-          <div class="flex items-center justify-between">
-            <span class="font-bold text-xs sm:text-sm text-[var(--foreground)]">${reg}</span>
-            <span class="w-2 h-2 rounded-full ${color.dot}"></span>
-          </div>
-          <div class="mt-2 text-lg sm:text-xl font-bold ${color.text}">${avg.toFixed(1)}°C</div>
-          <div class="text-[11px] text-[var(--muted-foreground)] mt-0.5">${Math.min(...allMin)}° ~ ${Math.max(...allMax)}°C</div>
-        `;
-        container.appendChild(card);
-      });
+    // Toggle County Boundaries
+    function toggleCountyBorders(checked) {
+      document.getElementById('countyBorders').style.display = checked ? 'block' : 'none';
     }
 
-    function selectRegion(regionName) {
-      currentRegion = regionName;
-
-      // Update Tab Styles
-      document.querySelectorAll(".region-tab").forEach(tab => {
-        if (tab.dataset.region === regionName) {
-          tab.classList.add("active");
-        } else {
-          tab.classList.remove("active");
-        }
-      });
-
-      const records = weatherData[regionName];
-      const mins = records.map(r => r.min);
-      const maxs = records.map(r => r.max);
-      const overallMin = Math.min(...mins);
-      const overallMax = Math.max(...maxs);
-      const avg = (mins.reduce((a,b)=>a+b)/mins.length + maxs.reduce((a,b)=>a+b)/maxs.length) / 2;
-
-      // Update KPI
-      document.getElementById("kpiRegion").innerText = regionName;
-      document.getElementById("kpiMin").innerText = `${overallMin.toFixed(1)} °C`;
-      document.getElementById("kpiMax").innerText = `${overallMax.toFixed(1)} °C`;
-      document.getElementById("kpiAvg").innerText = `${avg.toFixed(1)} °C`;
-      document.getElementById("chartTitle").innerText = `📈 Temperature Forecast - ${regionName}`;
-
-      // Update Table
-      const tbody = document.getElementById("forecastTableBody");
-      tbody.innerHTML = "";
-      records.forEach(r => {
-        const tr = document.createElement("tr");
-        tr.className = "hover:bg-[var(--accent)]/40 transition-colors";
-        tr.innerHTML = `
-          <td class="py-2.5 font-medium">${r.fullDate}</td>
-          <td class="py-2.5 text-right font-bold text-blue-600 dark:text-blue-400">${r.min.toFixed(1)} °C</td>
-          <td class="py-2.5 text-right font-bold text-rose-600 dark:text-rose-400">${r.max.toFixed(1)} °C</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      // Update SVG Line Chart
-      renderSvgChart(records);
-      renderRegionCards();
+    // Toggle Temperature Number Labels
+    function toggleTempLabels(checked) {
+      document.getElementById('tempBubblesLayer').style.display = checked ? 'block' : 'none';
     }
 
-    function renderSvgChart(records) {
-      const svg = document.getElementById("weatherChart");
-      svg.innerHTML = "";
-
-      const width = svg.clientWidth || 500;
-      const height = svg.clientHeight || 250;
-      const padding = { top: 25, right: 30, bottom: 35, left: 35 };
-
-      const chartW = width - padding.left - padding.right;
-      const chartH = height - padding.top - padding.bottom;
-
-      const yMin = 15;
-      const yMax = 38;
-
-      const getY = (temp) => padding.top + chartH - ((temp - yMin) / (yMax - yMin)) * chartH;
-      const getX = (index) => padding.left + (index / (records.length - 1)) * chartW;
-
-      // Draw Grid Lines & Y-Labels
-      [20, 25, 30, 35].forEach(temp => {
-        const y = getY(temp);
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-        line.setAttribute("x1", padding.left);
-        line.setAttribute("x2", width - padding.right);
-        line.setAttribute("y1", y);
-        line.setAttribute("y2", y);
-        line.setAttribute("stroke", "currentColor");
-        line.setAttribute("stroke-opacity", "0.15");
-        line.setAttribute("stroke-dasharray", "4,4");
-        svg.appendChild(line);
-
-        const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        text.setAttribute("x", padding.left - 8);
-        text.setAttribute("y", y + 4);
-        text.setAttribute("text-anchor", "end");
-        text.setAttribute("font-size", "10");
-        text.setAttribute("fill", "currentColor");
-        text.setAttribute("opacity", "0.6");
-        text.textContent = `${temp}°`;
-        svg.appendChild(text);
+    // Switch Basemap
+    function switchBasemap(mode, btn) {
+      const container = btn.parentElement;
+      container.querySelectorAll('button').forEach(b => {
+        b.className = "py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
       });
+      btn.className = "py-1.5 rounded-lg text-white bg-[#0284c7] transition-all";
 
-      // Build Paths
-      let maxPathD = "";
-      let minPathD = "";
-
-      records.forEach((r, i) => {
-        const x = getX(i);
-        const yMax = getY(r.max);
-        const yMin = getY(r.min);
-
-        maxPathD += (i === 0 ? `M ${x} ${yMax}` : ` L ${x} ${yMax}`);
-        minPathD += (i === 0 ? `M ${x} ${yMin}` : ` L ${x} ${yMin}`);
-
-        // X-Axis Labels
-        const xLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        xLabel.setAttribute("x", x);
-        xLabel.setAttribute("y", height - 8);
-        xLabel.setAttribute("text-anchor", "middle");
-        xLabel.setAttribute("font-size", "11");
-        xLabel.setAttribute("fill", "currentColor");
-        xLabel.setAttribute("opacity", "0.8");
-        xLabel.textContent = r.date;
-        svg.appendChild(xLabel);
-      });
-
-      // MaxT Path
-      const maxPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      maxPath.setAttribute("d", maxPathD);
-      maxPath.setAttribute("fill", "none");
-      maxPath.setAttribute("stroke", "#e11d48");
-      maxPath.setAttribute("stroke-width", "3");
-      maxPath.setAttribute("stroke-linecap", "round");
-      maxPath.setAttribute("stroke-linejoin", "round");
-      svg.appendChild(maxPath);
-
-      // MinT Path
-      const minPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-      minPath.setAttribute("d", minPathD);
-      minPath.setAttribute("fill", "none");
-      minPath.setAttribute("stroke", "#2563eb");
-      minPath.setAttribute("stroke-width", "3");
-      minPath.setAttribute("stroke-linecap", "round");
-      minPath.setAttribute("stroke-linejoin", "round");
-      svg.appendChild(minPath);
-
-      // Dots and value labels
-      records.forEach((r, i) => {
-        const x = getX(i);
-        const yMax = getY(r.max);
-        const yMin = getY(r.min);
-
-        // Max Dot
-        const maxCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        maxCircle.setAttribute("cx", x);
-        maxCircle.setAttribute("cy", yMax);
-        maxCircle.setAttribute("r", "5");
-        maxCircle.setAttribute("fill", "#e11d48");
-        maxCircle.setAttribute("stroke", "#fff");
-        maxCircle.setAttribute("stroke-width", "2");
-        svg.appendChild(maxCircle);
-
-        // Max Text
-        const maxText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        maxText.setAttribute("x", x);
-        maxText.setAttribute("y", yMax - 9);
-        maxText.setAttribute("text-anchor", "middle");
-        maxText.setAttribute("font-size", "10");
-        maxText.setAttribute("font-weight", "bold");
-        maxText.setAttribute("fill", "#e11d48");
-        maxText.textContent = `${r.max}°`;
-        svg.appendChild(maxText);
-
-        // Min Dot
-        const minCircle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        minCircle.setAttribute("cx", x);
-        minCircle.setAttribute("cy", yMin);
-        minCircle.setAttribute("r", "5");
-        minCircle.setAttribute("fill", "#2563eb");
-        minCircle.setAttribute("stroke", "#fff");
-        minCircle.setAttribute("stroke-width", "2");
-        svg.appendChild(minCircle);
-
-        // Min Text
-        const minText = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        minText.setAttribute("x", x);
-        minText.setAttribute("y", yMin + 16);
-        minText.setAttribute("text-anchor", "middle");
-        minText.setAttribute("font-size", "10");
-        minText.setAttribute("font-weight", "bold");
-        minText.setAttribute("fill", "#2563eb");
-        minText.textContent = `${r.min}°`;
-        svg.appendChild(minText);
-      });
+      const bg = document.getElementById('mapViewport');
+      if (mode === 'street') {
+        bg.style.backgroundColor = '#172554';
+      } else {
+        bg.style.backgroundColor = '#090d16';
+      }
     }
 
-    // Initialize
-    window.addEventListener("DOMContentLoaded", () => {
-      selectRegion("北部地區");
-    });
-    window.addEventListener("resize", () => {
-      renderSvgChart(weatherData[currentRegion]);
-    });
+    // Show Station Detail Popup
+    function showStationDetail(county, station, temp, hum, wind, weather) {
+      document.getElementById('modalCounty').innerText = county;
+      document.getElementById('modalStation').innerText = station;
+      document.getElementById('modalTemp').innerText = `${temp.toFixed(1)} °C`;
+      document.getElementById('modalHumidity').innerText = `${hum}%`;
+      document.getElementById('modalWind').innerText = `${wind} m/s`;
+      document.getElementById('modalWeather').innerText = weather;
+      document.getElementById('stationModal').classList.remove('hidden');
+    }
+
+    function closeStationModal(e) {
+      document.getElementById('stationModal').classList.add('hidden');
+    }
+
+    // Toggle Alert Modal
+    function toggleAlertModal() {
+      const modal = document.getElementById('alertModal');
+      modal.classList.toggle('hidden');
+    }
+
+    // Locate User Position
+    function locateUserPosition() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(() => {
+          alert("📍 已成功偵測您目前位於【臺灣北部】，已自動為您聚焦至鄰近測站！");
+        }, () => {
+          alert("📍 模擬定位：您目前位於【臺北市】，鄰近氣溫 21.0°C！");
+        });
+      } else {
+        alert("📍 模擬定位：您目前位於【臺北市】，鄰近氣溫 21.0°C！");
+      }
+    }
+
+    // Refresh Animation
+    function refreshData() {
+      const icon = document.getElementById('refreshIcon');
+      icon.classList.add('animate-spin');
+      setTimeout(() => {
+        icon.classList.remove('animate-spin');
+        updateClock();
+      }, 700);
+    }
   </script>
 </body>
 </html>

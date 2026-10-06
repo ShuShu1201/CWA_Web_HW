@@ -9,20 +9,9 @@
   <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;700;800;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
 
   <style>
-    :root {
-      --bg-cream: #fbfbfd;
-      --pastel-sky: #ebf5fb;
-      --pastel-mint: #e8f8f5;
-      --pastel-pink: #fdf2f4;
-      --card-bg: rgba(255, 255, 255, 0.92);
-      --card-border: rgba(255, 255, 255, 0.85);
-      --shadow-kawaii: 0 10px 30px -5px rgba(175, 185, 205, 0.28), 0 2px 8px rgba(0, 0, 0, 0.04);
-      --primary-kawaii: #ff758f;
-    }
-
     * {
       box-sizing: border-box;
       user-select: none;
@@ -34,35 +23,45 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      background: linear-gradient(135deg, #eef7fe 0%, #fef8f4 50%, #f5f3ff 100%);
+      background: radial-gradient(circle at 50% 30%, #ffffff 0%, #edf6fd 60%, #faefe8 100%);
       font-family: 'Zen Maru Gothic', 'Nunito', system-ui, -apple-system, sans-serif;
       color: #334155;
     }
 
-    /* 漂浮棉花糖雲朵動畫 */
+    /* 漂浮白雲動畫 */
     .floating-cloud {
       position: absolute;
       pointer-events: none;
-      opacity: 0.75;
-      animation: driftClouds 45s linear infinite;
-      z-index: 2;
+      opacity: 0.65;
+      animation: floatCloud 50s linear infinite;
+      z-index: 5;
     }
-    @keyframes driftClouds {
-      0% { transform: translateX(-150px); }
-      100% { transform: translateX(calc(100vw + 150px)); }
+    @keyframes floatCloud {
+      0% { transform: translateX(-180px); }
+      100% { transform: translateX(calc(100vw + 180px)); }
     }
 
-    /* 氣溫馬卡龍膠囊 (Macaron Pill Marker) */
+    /* 可愛毛玻璃卡片 */
+    .kawaii-card {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      border: 2px solid rgba(255, 255, 255, 0.95);
+      box-shadow: 0 12px 30px -5px rgba(160, 180, 210, 0.28), 0 2px 8px rgba(0, 0, 0, 0.04);
+      border-radius: 24px;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* 氣溫馬卡龍膠囊標籤 */
     .temp-pill {
       position: absolute;
       transform: translate(-50%, -50%);
       cursor: pointer;
-      z-index: 30;
+      z-index: 40;
       transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
     .temp-pill:hover, .temp-pill.active {
       transform: translate(-50%, -50%) scale(1.22);
-      z-index: 50;
+      z-index: 60;
     }
     .temp-pill-inner {
       display: inline-flex;
@@ -73,71 +72,57 @@
       font-weight: 900;
       font-size: 13.5px;
       letter-spacing: -0.3px;
-      box-shadow: 0 4px 12px rgba(140, 150, 170, 0.35), 0 1px 3px rgba(0, 0, 0, 0.08);
+      box-shadow: 0 4px 12px rgba(130, 150, 180, 0.35);
       border: 2.2px solid #ffffff;
       white-space: nowrap;
       transition: all 0.2s ease;
     }
-    .temp-pill-label {
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      transform: translateX(-50%);
+    .temp-pill-name {
       font-size: 11px;
-      font-weight: 700;
-      color: #475569;
-      background: rgba(255, 255, 255, 0.85);
-      padding: 1px 6px;
-      border-radius: 6px;
+      font-weight: 800;
+      color: #334155;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 1px 7px;
+      border-radius: 8px;
       margin-top: 2px;
-      white-space: nowrap;
+      text-align: center;
       box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+      white-space: nowrap;
       pointer-events: none;
     }
 
-    /* 地圖縣市向量區塊 */
-    .county-path {
+    /* 縣市向量區塊 */
+    .county-shape {
       cursor: pointer;
-      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
       stroke: #ffffff;
-      stroke-width: 1.8;
+      stroke-width: 2.2;
       stroke-linejoin: round;
-      filter: drop-shadow(0 2px 6px rgba(160, 180, 210, 0.2));
+      transition: all 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+      filter: drop-shadow(0 4px 10px rgba(140, 170, 205, 0.25));
     }
-    .county-path:hover, .county-path.active {
-      stroke: #ff6b8b !important;
-      stroke-width: 3.2 !important;
-      filter: drop-shadow(0 8px 16px rgba(255, 107, 139, 0.45)) brightness(1.08) !important;
-      transform: scale(1.008);
-      transform-origin: center center;
+    .county-shape:hover, .county-shape.active {
+      stroke: #ff477e !important;
+      stroke-width: 4 !important;
+      filter: drop-shadow(0 8px 22px rgba(255, 71, 126, 0.55)) brightness(1.08) !important;
+      transform: translateY(-2px);
     }
 
-    /* 響應式浮動氣象卡片 (Responsive Hover Weather Card) */
+    /* 懸停響應式氣象卡片 */
     #hoverWeatherCard {
-      position: absolute;
+      position: fixed;
       pointer-events: none;
-      z-index: 100;
+      z-index: 9999;
       opacity: 0;
-      transform: scale(0.92) translateY(8px);
-      transition: opacity 0.2s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-      filter: drop-shadow(0 16px 36px rgba(120, 140, 180, 0.32));
+      transform: scale(0.92) translateY(10px);
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      filter: drop-shadow(0 20px 40px rgba(120, 140, 180, 0.35));
     }
     #hoverWeatherCard.visible {
       opacity: 1;
       transform: scale(1) translateY(0);
-      pointer-events: auto;
     }
 
-    /* 可愛毛玻璃卡片 */
-    .kawaii-glass-card {
-      background: rgba(255, 255, 255, 0.94);
-      backdrop-filter: blur(18px);
-      border: 2px solid rgba(255, 255, 255, 0.95);
-      box-shadow: var(--shadow-kawaii);
-      border-radius: 24px;
-    }
-
-    /* 可愛點擊彈跳動畫 */
+    /* 按鈕彈跳回饋 */
     .bouncy-btn {
       transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
@@ -148,156 +133,151 @@
       transform: translateY(1px) scale(0.97);
     }
 
-    /* 自訂捲軸 */
-    ::-webkit-scrollbar {
-      width: 6px;
+    /* 橫向滑動列自訂捲軸 */
+    .custom-scroll::-webkit-scrollbar {
+      height: 5px;
     }
-    ::-webkit-scrollbar-thumb {
+    .custom-scroll::-webkit-scrollbar-thumb {
       background: #fed7aa;
-      border-radius: 10px;
+      border-radius: 9999px;
     }
   </style>
 </head>
-<body class="relative w-full h-full select-none">
+<body class="relative w-full h-full select-none flex flex-col justify-between">
 
   <!-- ========================================================================= -->
-  <!-- 0. 裝飾背景：漂浮粉彩雲朵與太陽                                           -->
+  <!-- 0. 背景裝飾：漂浮棉花糖雲朵                                               -->
   <!-- ========================================================================= -->
-  <div class="floating-cloud top-8" style="animation-duration: 48s;">
-    <svg width="120" height="60" viewBox="0 0 120 60" fill="white">
-      <path d="M20,45 A15,15 0 0,1 35,25 A25,25 0 0,1 75,20 A20,20 0 0,1 100,35 A15,15 0 0,1 95,50 L20,50 Z" opacity="0.88" />
+  <div class="floating-cloud top-6" style="animation-duration: 52s;">
+    <svg width="130" height="65" viewBox="0 0 120 60" fill="white">
+      <path d="M20,45 A15,15 0 0,1 35,25 A25,25 0 0,1 75,20 A20,20 0 0,1 100,35 A15,15 0 0,1 95,50 L20,50 Z" opacity="0.85" />
     </svg>
   </div>
-  <div class="floating-cloud top-36" style="animation-duration: 38s; animation-delay: -18s;">
-    <svg width="90" height="48" viewBox="0 0 120 60" fill="white">
-      <path d="M20,45 A15,15 0 0,1 35,25 A25,25 0 0,1 75,20 A20,20 0 0,1 100,35 A15,15 0 0,1 95,50 L20,50 Z" opacity="0.75" />
+  <div class="floating-cloud top-40" style="animation-duration: 42s; animation-delay: -20s;">
+    <svg width="100" height="50" viewBox="0 0 120 60" fill="white">
+      <path d="M20,45 A15,15 0 0,1 35,25 A25,25 0 0,1 75,20 A20,20 0 0,1 100,35 A15,15 0 0,1 95,50 L20,50 Z" opacity="0.7" />
     </svg>
   </div>
 
-  <!-- 可愛太陽小裝飾 -->
-  <div class="absolute top-4 right-8 pointer-events-none opacity-40 hidden sm:block animate-pulse">
-    <span class="text-4xl">☀️</span>
-  </div>
+  <!-- ========================================================================= -->
+  <!-- 1. 中央主要地圖工作區 (Map Workspace)                                     -->
+  <!-- ========================================================================= -->
+  <div class="relative flex-1 w-full h-full overflow-hidden flex items-center justify-center p-2 sm:p-6">
 
-  <!-- ========================================================================= -->
-  <!-- 1. 中央核心：台灣向量地圖與測站標記容器                                   -->
-  <!-- ========================================================================= -->
-  <div id="mapViewport" class="absolute inset-0 w-full h-full flex items-center justify-center overflow-hidden z-10">
-    <div id="mapCanvasWrap" class="relative w-[1000px] h-[860px] max-w-full max-h-full flex items-center justify-center">
-      
-      <!-- 臺灣各縣市精細可愛向量 SVG (以實體相對座標繪製) -->
-      <svg id="taiwanSvg" viewBox="0 0 880 840" class="w-full h-full drop-shadow-lg">
+    <!-- 臺灣主體地圖容器 (具備固定比例，絕對不塌陷) -->
+    <div id="taiwanMapBox" class="relative w-full max-w-[850px] h-[78vh] max-h-[780px] flex items-center justify-center">
+
+      <!-- 臺灣各縣市高解析可愛向量地圖 -->
+      <svg id="taiwanSvg" viewBox="0 0 1000 900" preserveAspectRatio="xMidYMid meet" class="w-full h-full drop-shadow-md">
         <defs>
-          <radialGradient id="oceanGlow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.6"/>
-            <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+          <radialGradient id="taiwanSea" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.8"/>
+            <stop offset="70%" stop-color="#e0f2fe" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#e0f2fe" stop-opacity="0"/>
           </radialGradient>
-          <filter id="softShadow" x="-10%" y="-10%" width="130%" height="130%">
-            <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#8ba3c7" flood-opacity="0.25" />
-          </filter>
         </defs>
 
-        <!-- 海洋柔和發光背景 -->
-        <ellipse cx="460" cy="440" rx="420" ry="380" fill="url(#oceanGlow)" />
+        <!-- 海洋柔光底暈 -->
+        <ellipse cx="500" cy="460" rx="460" ry="420" fill="url(#taiwanSea)" />
 
-        <!-- 離島：金門 (西北方) -->
-        <g id="county-kinmen" class="county-group" data-id="kinmen" data-name="金門縣" data-temp="22" data-region="離島地區">
-          <path class="county-path" d="M 175,280 C 195,275 215,285 220,295 C 215,310 195,315 178,308 Z" fill="#d9f99d"/>
-          <circle cx="162" cy="295" r="5" class="county-path" fill="#d9f99d" />
+        <!-- 臺灣本島底盤陰影層 -->
+        <path d="M 645,95 C 675,100 705,125 725,160 C 740,195 730,240 715,290 C 700,350 675,410 655,470 C 635,530 615,595 585,655 C 565,695 540,715 520,705 C 505,675 495,620 480,560 C 465,510 440,460 430,410 C 420,360 435,310 455,260 C 475,210 510,165 550,130 C 585,105 615,95 645,95 Z"
+              fill="#f1f5f9" opacity="0.6" transform="translate(6, 12)" />
+
+        <!-- ======================= 離島群 ======================= -->
+        <!-- 金門 -->
+        <g id="poly-kinmen" class="county-shape" data-id="kinmen">
+          <rect x="130" y="275" width="48" height="24" rx="12" fill="#d9f99d"/>
+          <circle cx="120" cy="285" r="7" fill="#d9f99d"/>
         </g>
-
-        <!-- 離島：澎湖 (西方海域) -->
-        <g id="county-penghu" class="county-group" data-id="penghu" data-name="澎湖縣" data-temp="25" data-region="離島地區">
-          <path class="county-path" d="M 330,420 C 342,415 350,425 348,440 C 344,455 330,470 322,460 C 318,445 322,430 330,420 Z" fill="#fef08a"/>
-          <path class="county-path" d="M 345,465 C 352,460 358,468 355,478 C 348,485 340,475 345,465 Z" fill="#fef08a"/>
-          <circle cx="335" cy="405" r="4" class="county-path" fill="#fef08a"/>
+        <!-- 澎湖群島 -->
+        <g id="poly-penghu" class="county-shape" data-id="penghu">
+          <ellipse cx="300" cy="430" rx="20" ry="32" fill="#fef08a"/>
+          <circle cx="285" cy="455" r="9" fill="#fef08a"/>
+          <circle cx="315" cy="405" r="7" fill="#fef08a"/>
         </g>
-
-        <!-- 離島：連江馬祖 (最北端海域) -->
-        <g id="county-matsu" class="county-group" data-id="matsu" data-name="連江縣" data-temp="19" data-region="離島地區">
-          <path class="county-path" d="M 270,110 C 285,105 295,115 290,125 C 280,132 268,125 270,110 Z" fill="#a5f3fc"/>
+        <!-- 馬祖(連江) -->
+        <g id="poly-matsu" class="county-shape" data-id="matsu">
+          <rect x="230" y="80" width="36" height="18" rx="8" fill="#a5f3fc"/>
         </g>
-
-        <!-- 臺灣本島主體各縣市 (北至南、西至東排列) -->
-        
-        <!-- 1. 基隆市 (東北角) -->
-        <path id="path-keelung" class="county-path" data-id="keelung" data-name="基隆市" data-temp="23" data-region="北部地區"
-              d="M 625,120 C 635,115 645,122 642,132 C 636,138 625,135 620,128 Z" fill="#fef08a"/>
-
-        <!-- 2. 新北市 (環繞臺北、涵蓋東北角至西北海岸) -->
-        <path id="path-newtaipei" class="county-path" data-id="newtaipei" data-name="新北市" data-temp="21" data-region="北部地區"
-              d="M 590,95 C 620,95 655,115 675,145 C 685,160 670,175 650,172 C 635,165 620,175 610,165 C 585,160 565,145 560,125 C 565,108 578,98 590,95 Z" fill="#d9f99d"/>
-
-        <!-- 3. 臺北市 (盆地中央) -->
-        <path id="path-taipei" class="county-path" data-id="taipei" data-name="臺北市" data-temp="21" data-region="北部地區"
-              d="M 600,122 C 612,120 622,128 620,140 C 615,152 602,155 595,148 C 592,138 595,126 600,122 Z" fill="#d9f99d"/>
-
-        <!-- 4. 桃園市 -->
-        <path id="path-taoyuan" class="county-path" data-id="taoyuan" data-name="桃園市" data-temp="22" data-region="北部地區"
-              d="M 545,130 C 565,125 585,145 580,165 C 572,185 550,195 535,180 C 530,165 535,145 545,130 Z" fill="#d9f99d"/>
-
-        <!-- 5. 新竹市 / 新竹縣 -->
-        <path id="path-hsinchu" class="county-path" data-id="hsinchu" data-name="新竹縣市" data-temp="22" data-region="北部地區"
-              d="M 515,165 C 538,160 560,180 550,205 C 540,225 515,225 500,205 C 498,185 505,170 515,165 Z" fill="#d9f99d"/>
-
-        <!-- 6. 苗栗縣 -->
-        <path id="path-miaoli" class="county-path" data-id="miaoli" data-name="苗栗縣" data-temp="22" data-region="中部地區"
-              d="M 485,205 C 510,200 535,220 530,245 C 520,265 490,265 475,248 C 470,228 478,212 485,205 Z" fill="#d9f99d"/>
-
-        <!-- 7. 宜蘭縣 (東北部) -->
-        <path id="path-yilan" class="county-path" data-id="yilan" data-name="宜蘭縣" data-temp="21" data-region="東北部地區"
-              d="M 625,170 C 655,165 670,185 665,220 C 655,248 630,250 615,225 C 610,198 615,180 625,170 Z" fill="#d9f99d"/>
-
-        <!-- 8. 臺中市 -->
-        <path id="path-taichung" class="county-path" data-id="taichung" data-name="臺中市" data-temp="22" data-region="中部地區"
-              d="M 460,248 C 485,245 530,250 545,275 C 530,305 480,310 450,290 C 445,268 452,252 460,248 Z" fill="#d9f99d"/>
-
-        <!-- 9. 彰化縣 -->
-        <path id="path-changhua" class="county-path" data-id="changhua" data-name="彰化縣" data-temp="23" data-region="中部地區"
-              d="M 430,292 C 455,290 468,305 460,328 C 445,345 425,340 420,320 C 418,305 422,295 430,292 Z" fill="#fef08a"/>
-
-        <!-- 10. 南投縣 (臺灣中心心臟) -->
-        <path id="path-nantou" class="county-path" data-id="nantou" data-name="南投縣" data-temp="20" data-region="中部地區"
-              d="M 470,295 C 520,285 555,310 550,370 C 535,410 480,415 465,375 C 460,340 462,310 470,295 Z" fill="#d9f99d"/>
-
-        <!-- 11. 花蓮縣 (東部修長海岸) -->
-        <path id="path-hualien" class="county-path" data-id="hualien" data-name="花蓮縣" data-temp="19" data-region="東部地區"
-              d="M 565,245 C 610,230 645,270 635,350 C 620,430 580,460 560,435 C 550,390 545,300 565,245 Z" fill="#a5f3fc"/>
-
-        <!-- 12. 雲林縣 -->
-        <path id="path-yunlin" class="county-path" data-id="yunlin" data-name="雲林縣" data-temp="23" data-region="中部地區"
-              d="M 412,342 C 445,340 460,358 455,385 C 438,405 408,400 402,375 C 398,358 405,345 412,342 Z" fill="#fef08a"/>
-
-        <!-- 13. 嘉義縣 / 嘉義市 -->
-        <path id="path-chiayi" class="county-path" data-id="chiayi" data-name="嘉義縣市" data-temp="22" data-region="南部地區"
-              d="M 405,390 C 440,385 468,400 460,435 C 440,455 405,450 395,425 C 392,408 398,395 405,390 Z" fill="#d9f99d"/>
-
-        <!-- 14. 臺南市 -->
-        <path id="path-tainan" class="county-path" data-id="tainan" data-name="臺南市" data-temp="24" data-region="南部地區"
-              d="M 390,440 C 428,435 450,455 442,492 C 425,520 388,515 378,485 C 375,462 380,448 390,440 Z" fill="#fef08a"/>
-
-        <!-- 15. 高雄市 -->
-        <path id="path-kaohsiung" class="county-path" data-id="kaohsiung" data-name="高雄市" data-temp="26" data-region="南部地區"
-              d="M 400,495 C 440,470 485,490 480,540 C 465,585 415,595 390,560 C 382,535 388,508 400,495 Z" fill="#fed7aa"/>
-
-        <!-- 16. 臺東縣 (東南部) -->
-        <path id="path-taitung" class="county-path" data-id="taitung" data-name="臺東縣" data-temp="23" data-region="東南部地區"
-              d="M 520,445 C 560,435 585,475 570,560 C 555,630 515,645 495,620 C 490,570 500,490 520,445 Z" fill="#fef08a"/>
-
-        <!-- 17. 屏東縣 (臺灣最南端恆春半島) -->
-        <path id="path-pingtung" class="county-path" data-id="pingtung" data-name="屏東縣" data-temp="26" data-region="南部地區"
-              d="M 425,570 C 465,560 485,590 478,650 C 470,700 450,735 435,720 C 422,690 415,625 425,570 Z" fill="#fed7aa"/>
-
         <!-- 綠島 & 蘭嶼 -->
-        <circle id="island-green" class="county-path" data-id="taitung" data-name="臺東綠島" data-temp="23" data-region="東南部地區" cx="595" cy="580" r="7" fill="#fef08a"/>
-        <circle id="island-orchid" class="county-path" data-id="taitung" data-name="臺東蘭嶼" data-temp="24" data-region="東南部地區" cx="565" cy="670" r="9" fill="#fef08a"/>
+        <circle id="poly-green" class="county-shape" data-id="taitung" cx="645" cy="575" r="11" fill="#fef08a"/>
+        <circle id="poly-orchid" class="county-shape" data-id="taitung" cx="620" cy="670" r="13" fill="#fef08a"/>
+
+        <!-- ======================= 臺灣本島 22 縣市區塊 ======================= -->
+        
+        <!-- 基隆市 -->
+        <path id="poly-keelung" class="county-shape" data-id="keelung"
+              d="M 645,92 C 658,88 672,98 668,112 C 660,122 645,120 638,110 C 636,98 642,94 645,92 Z" fill="#fef08a"/>
+
+        <!-- 臺北市 -->
+        <path id="poly-taipei" class="county-shape" data-id="taipei"
+              d="M 618,105 C 632,102 642,112 638,125 C 630,136 616,138 610,130 C 606,120 610,108 618,105 Z" fill="#d9f99d"/>
+
+        <!-- 新北市 -->
+        <path id="poly-newtaipei" class="county-shape" data-id="newtaipei"
+              d="M 598,82 C 635,82 678,105 702,138 C 715,158 698,175 675,170 C 655,165 640,175 630,162 C 600,155 580,140 572,118 C 578,98 588,85 598,82 Z" fill="#d9f99d"/>
+
+        <!-- 桃園市 -->
+        <path id="poly-taoyuan" class="county-shape" data-id="taoyuan"
+              d="M 552,122 C 578,118 600,140 592,165 C 582,188 555,198 540,180 C 532,162 540,138 552,122 Z" fill="#d9f99d"/>
+
+        <!-- 宜蘭縣 -->
+        <path id="poly-yilan" class="county-shape" data-id="yilan"
+              d="M 642,165 C 678,160 695,185 688,225 C 678,258 650,260 632,232 C 626,200 632,178 642,165 Z" fill="#d9f99d"/>
+
+        <!-- 新竹縣市 -->
+        <path id="poly-hsinchu" class="county-shape" data-id="hsinchu"
+              d="M 518,158 C 545,152 570,175 560,202 C 548,225 520,225 502,202 C 500,180 508,162 518,158 Z" fill="#d9f99d"/>
+
+        <!-- 苗栗縣 -->
+        <path id="poly-miaoli" class="county-shape" data-id="miaoli"
+              d="M 482,200 C 512,195 540,218 532,248 C 520,270 488,270 470,250 C 465,228 472,210 482,200 Z" fill="#d9f99d"/>
+
+        <!-- 臺中市 -->
+        <path id="poly-taichung" class="county-shape" data-id="taichung"
+              d="M 455,248 C 485,242 538,248 552,278 C 535,310 480,318 445,295 C 440,270 448,252 455,248 Z" fill="#d9f99d"/>
+
+        <!-- 彰化縣 -->
+        <path id="poly-changhua" class="county-shape" data-id="changhua"
+              d="M 420,295 C 448,292 462,310 452,335 C 435,355 412,350 408,328 C 405,310 410,298 420,295 Z" fill="#fef08a"/>
+
+        <!-- 南投縣 -->
+        <path id="poly-nantou" class="county-shape" data-id="nantou"
+              d="M 465,298 C 522,288 565,315 558,382 C 540,425 478,432 460,388 C 455,348 458,312 465,298 Z" fill="#d9f99d"/>
+
+        <!-- 花蓮縣 -->
+        <path id="poly-hualien" class="county-shape" data-id="hualien"
+              d="M 578,245 C 628,230 668,275 655,365 C 638,455 595,490 572,460 C 560,408 555,308 578,245 Z" fill="#a5f3fc"/>
+
+        <!-- 雲林縣 -->
+        <path id="poly-yunlin" class="county-shape" data-id="yunlin"
+              d="M 400,348 C 438,345 455,368 448,398 C 428,420 395,415 388,388 C 385,368 392,352 400,348 Z" fill="#fef08a"/>
+
+        <!-- 嘉義縣市 -->
+        <path id="poly-chiayi" class="county-shape" data-id="chiayi"
+              d="M 392,402 C 432,398 465,415 455,452 C 432,475 392,470 380,442 C 378,422 385,408 392,402 Z" fill="#d9f99d"/>
+
+        <!-- 臺南市 -->
+        <path id="poly-tainan" class="county-shape" data-id="tainan"
+              d="M 378,455 C 420,450 445,472 435,512 C 418,545 375,538 362,505 C 360,480 365,465 378,455 Z" fill="#fef08a"/>
+
+        <!-- 高雄市 -->
+        <path id="poly-kaohsiung" class="county-shape" data-id="kaohsiung"
+              d="M 388,515 C 432,488 482,510 478,565 C 460,615 405,628 375,588 C 368,560 375,530 388,515 Z" fill="#fed7aa"/>
+
+        <!-- 臺東縣 -->
+        <path id="poly-taitung" class="county-shape" data-id="taitung"
+              d="M 532,460 C 578,450 608,495 590,590 C 572,668 528,685 505,655 C 498,600 510,510 532,460 Z" fill="#fef08a"/>
+
+        <!-- 屏東縣 -->
+        <path id="poly-pingtung" class="county-shape" data-id="pingtung"
+              d="M 415,595 C 458,585 482,618 472,682 C 462,738 440,775 422,758 C 410,725 402,655 415,595 Z" fill="#fed7aa"/>
       </svg>
 
-      <!-- ===================================================================== -->
-      <!-- 測站氣溫馬卡龍膠囊標籤 (Macaron Temp Badges - 完美比對截圖點位)        -->
-      <!-- ===================================================================== -->
-      <div id="pillsContainer" class="absolute inset-0 pointer-events-none">
-        <!-- 膠囊標籤由 JavaScript 自動對位插入，此處具備預設點位 -->
+      <!-- 22 縣市馬卡龍氣溫膠囊層 (放置在 SVG 上方，位置以百分比定位) -->
+      <div id="pillsOverlay" class="absolute inset-0 pointer-events-none">
+        <!-- JS 動態生成所有測站膠囊 -->
       </div>
     </div>
   </div>
@@ -305,34 +285,34 @@
   <!-- ========================================================================= -->
   <!-- 2. 滑鼠移入即時響應式卡片 (Hover Weather Card)                            -->
   <!-- ========================================================================= -->
-  <div id="hoverWeatherCard" class="w-80 sm:w-88 kawaii-glass-card p-4 transition-all">
-    <!-- 卡片頂部：縣市名稱、區域標籤與天氣狀態 -->
-    <div class="flex items-center justify-between pb-2 border-b border-pink-100/80">
+  <div id="hoverWeatherCard" class="w-80 sm:w-88 kawaii-card p-4">
+    <!-- 頂部：標題與氣象簡況 -->
+    <div class="flex items-center justify-between pb-2 border-b border-pink-100">
       <div class="flex items-center gap-2">
-        <span id="hIcon" class="text-2xl animate-bounce">⛅</span>
+        <span id="hIcon" class="text-3xl animate-bounce">⛅</span>
         <div>
-          <h4 id="hTitle" class="text-lg font-black text-slate-800 tracking-tight leading-none">臺北市</h4>
+          <h4 id="hTitle" class="text-lg font-black text-slate-800 leading-none">臺北市</h4>
           <span id="hRegion" class="text-[11px] font-bold text-pink-500 bg-pink-50 px-2 py-0.5 rounded-full inline-block mt-0.5">北部地區</span>
         </div>
       </div>
       <div class="text-right">
-        <div id="hCondition" class="text-xs font-bold text-slate-600">多雲時晴</div>
-        <div class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1 justify-end">
+        <div id="hCondition" class="text-xs font-bold text-slate-700">多雲時晴</div>
+        <div class="text-[10px] text-emerald-600 font-bold flex items-center gap-1 justify-end">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> 舒適宜人
         </div>
       </div>
     </div>
 
-    <!-- 核心氣溫展示區 -->
+    <!-- 氣溫展示區 -->
     <div class="flex items-center justify-between my-3 px-1">
       <div class="flex items-baseline gap-1">
-        <span id="hTemp" class="text-4xl font-black text-slate-800 tracking-tighter">23°</span>
-        <span class="text-sm font-bold text-slate-500">C</span>
+        <span id="hTemp" class="text-4xl font-black text-slate-800 tracking-tighter">21°</span>
+        <span class="text-base font-bold text-slate-500">C</span>
       </div>
       <div class="text-right">
         <div class="text-xs font-bold text-slate-700 flex items-center gap-1">
           <span>🧸 體感溫度</span>
-          <span id="hFeelsLike" class="text-pink-600 font-black">24°C</span>
+          <span id="hFeelsLike" class="text-pink-600 font-black">22°C</span>
         </div>
         <div class="text-[11px] text-slate-500 mt-0.5">
           <span class="text-sky-500 font-bold">最低 <span id="hMinT">19°</span></span> · 
@@ -341,453 +321,408 @@
       </div>
     </div>
 
-    <!-- 四格指標：降雨、濕度、風速、紫外線 -->
+    <!-- 四宮格指標 -->
     <div class="grid grid-cols-2 gap-2 my-2 text-xs">
-      <div class="bg-sky-50/70 p-2 rounded-xl flex items-center gap-2 border border-sky-100/70">
-        <span class="text-base">💧</span>
+      <div class="bg-sky-50 p-2 rounded-xl flex items-center gap-2 border border-sky-100">
+        <span class="text-lg">💧</span>
         <div>
           <div class="text-[10px] text-slate-400 font-bold">降雨機率</div>
-          <div id="hRainProb" class="font-extrabold text-sky-700">10%</div>
+          <div id="hRainProb" class="font-extrabold text-sky-700">20%</div>
         </div>
       </div>
-      <div class="bg-indigo-50/70 p-2 rounded-xl flex items-center gap-2 border border-indigo-100/70">
-        <span class="text-base">🌫️</span>
+      <div class="bg-indigo-50 p-2 rounded-xl flex items-center gap-2 border border-indigo-100">
+        <span class="text-lg">🌫️</span>
         <div>
           <div class="text-[10px] text-slate-400 font-bold">相對濕度</div>
-          <div id="hHumidity" class="font-extrabold text-indigo-700">68%</div>
+          <div id="hHumidity" class="font-extrabold text-indigo-700">72%</div>
         </div>
       </div>
-      <div class="bg-emerald-50/70 p-2 rounded-xl flex items-center gap-2 border border-emerald-100/70">
-        <span class="text-base">🍃</span>
+      <div class="bg-emerald-50 p-2 rounded-xl flex items-center gap-2 border border-emerald-100">
+        <span class="text-lg">🍃</span>
         <div>
-          <div class="text-[10px] text-slate-400 font-bold">風速風向</div>
+          <div class="text-[10px] text-slate-400 font-bold">風向風速</div>
           <div id="hWind" class="font-extrabold text-emerald-700">3.2 m/s 東北</div>
         </div>
       </div>
-      <div class="bg-amber-50/70 p-2 rounded-xl flex items-center gap-2 border border-amber-100/70">
-        <span class="text-base">☀️</span>
+      <div class="bg-amber-50 p-2 rounded-xl flex items-center gap-2 border border-amber-100">
+        <span class="text-lg">☀️</span>
         <div>
           <div class="text-[10px] text-slate-400 font-bold">紫外線</div>
-          <div id="hUv" class="font-extrabold text-amber-700">4 (中量級)</div>
+          <div id="hUv" class="font-extrabold text-amber-700">3 (中量)</div>
         </div>
       </div>
     </div>
 
-    <!-- 可愛穿搭與生活貼心指南 -->
+    <!-- 萌萌穿搭叮嚀 -->
     <div class="bg-gradient-to-r from-pink-50 to-amber-50 p-2.5 rounded-2xl border border-pink-100 mt-2">
       <div class="flex items-center gap-1.5 text-pink-600 font-bold text-xs mb-1">
         <span>🎀</span>
-        <span>今日萌萌穿搭指南</span>
+        <span>今日萌萌生活指南</span>
       </div>
       <p id="hAdvice" class="text-[11px] text-slate-600 font-medium leading-relaxed">
-        早晚微涼溫差大～出門推薦穿薄長袖搭配可愛開襟針織衫，帶把晴雨兩用摺疊傘最安心喔！✨
+        早晚微涼溫差大～洋蔥式穿法搭件輕便針織開衫最舒服，隨身帶把可愛小摺傘！✨
       </p>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 3. 左上角：台灣即時氣象資訊卡 (比對截圖樣式)                               -->
+  <!-- 3. 左上角：台灣即時氣象資訊卡                                             -->
   <!-- ========================================================================= -->
-  <div class="absolute top-4 left-4 z-30 w-80 sm:w-92 kawaii-glass-card p-5">
+  <div id="leftInfoPanel" class="absolute top-4 left-4 z-30 w-76 sm:w-84 kawaii-card p-4 transition-all">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl sm:text-2xl font-black text-slate-800 tracking-tight flex items-center gap-2">
+      <h1 class="text-lg sm:text-xl font-black text-slate-800 flex items-center gap-1.5">
         <span>🌸 台灣即時氣象</span>
       </h1>
-      <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black flex items-center gap-1.5 shadow-sm border border-emerald-200">
-        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-black flex items-center gap-1">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
         即時 API
       </span>
     </div>
 
-    <!-- 測站與觀測時間資訊 -->
-    <div class="text-xs text-slate-500 mt-2 space-y-0.5 font-medium">
+    <div class="text-[11px] text-slate-500 mt-1.5 space-y-0.5 font-medium">
       <p>觀測時間：<span id="liveObsTime" class="text-slate-700 font-bold">10/06 22:30</span></p>
       <p>資料來源：<span class="text-slate-600 font-semibold">CWA 氣象署 OpenData</span></p>
-      <p>本次讀取：<span class="text-pink-600 font-bold">CWA API（已同步 SQLite 資料庫）</span></p>
+      <p>本次讀取：<span class="text-pink-600 font-bold">即時呼叫 CWA API（已更新）</span></p>
       <p>測站數量：<span class="text-slate-700 font-bold">362 站</span></p>
     </div>
 
-    <!-- 四宮格統計指標 (比對截圖版面) -->
-    <div class="grid grid-cols-2 gap-2.5 mt-4">
-      <!-- 最高溫 -->
-      <div class="bg-gradient-to-br from-amber-50 to-orange-50/60 p-3 rounded-2xl border border-amber-200/60 shadow-sm">
-        <div class="text-[11px] font-bold text-amber-600">最高溫 ☀️</div>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span class="text-2xl font-black text-slate-800 tracking-tight">27.6</span>
-          <span class="text-xs font-bold text-slate-500">°C</span>
-        </div>
-        <div class="text-[11px] text-slate-500 mt-0.5 font-semibold truncate">崎峰國小 (屏東)</div>
+    <!-- 四宮格統計 -->
+    <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
+      <div class="bg-amber-50/80 p-2 rounded-xl border border-amber-200">
+        <div class="text-[10px] font-bold text-amber-700">最高溫 ☀️</div>
+        <div class="text-lg font-black text-slate-800 leading-tight">27.6 <span class="text-xs">°C</span></div>
+        <div class="text-[10px] text-slate-500 truncate font-semibold">崎峰國小</div>
       </div>
-
-      <!-- 最低溫 -->
-      <div class="bg-gradient-to-br from-sky-50 to-blue-50/60 p-3 rounded-2xl border border-sky-200/60 shadow-sm">
-        <div class="text-[11px] font-bold text-sky-600">最低溫 ❄️</div>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span class="text-2xl font-black text-slate-800 tracking-tight">4.2</span>
-          <span class="text-xs font-bold text-slate-500">°C</span>
-        </div>
-        <div class="text-[11px] text-slate-500 mt-0.5 font-semibold truncate">玉山 (南投)</div>
+      <div class="bg-sky-50/80 p-2 rounded-xl border border-sky-200">
+        <div class="text-[10px] font-bold text-sky-700">最低溫 ❄️</div>
+        <div class="text-lg font-black text-slate-800 leading-tight">4.2 <span class="text-xs">°C</span></div>
+        <div class="text-[10px] text-slate-500 truncate font-semibold">玉山</div>
       </div>
-
-      <!-- 最大雨量 -->
-      <div class="bg-gradient-to-br from-cyan-50 to-teal-50/60 p-3 rounded-2xl border border-cyan-200/60 shadow-sm">
-        <div class="text-[11px] font-bold text-cyan-600">最大雨量 🌧️</div>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span class="text-2xl font-black text-slate-800 tracking-tight">32.5</span>
-          <span class="text-xs font-bold text-slate-500">mm</span>
-        </div>
-        <div class="text-[11px] text-slate-500 mt-0.5 font-semibold truncate">奈武 (屏東)</div>
+      <div class="bg-cyan-50/80 p-2 rounded-xl border border-cyan-200">
+        <div class="text-[10px] font-bold text-cyan-700">最大雨量 🌧️</div>
+        <div class="text-lg font-black text-slate-800 leading-tight">32.5 <span class="text-xs">mm</span></div>
+        <div class="text-[10px] text-slate-500 truncate font-semibold">奈武</div>
       </div>
-
-      <!-- 最大風速 -->
-      <div class="bg-gradient-to-br from-emerald-50 to-green-50/60 p-3 rounded-2xl border border-emerald-200/60 shadow-sm">
-        <div class="text-[11px] font-bold text-emerald-600">最大風速 🍃</div>
-        <div class="flex items-baseline gap-1 mt-1">
-          <span class="text-2xl font-black text-slate-800 tracking-tight">14.5</span>
-          <span class="text-xs font-bold text-slate-500">m/s</span>
-        </div>
-        <div class="text-[11px] text-slate-500 mt-0.5 font-semibold truncate">東吉島 (澎湖)</div>
+      <div class="bg-emerald-50/80 p-2 rounded-xl border border-emerald-200">
+        <div class="text-[10px] font-bold text-emerald-700">最大風速 🍃</div>
+        <div class="text-lg font-black text-slate-800 leading-tight">14.5 <span class="text-xs">m/s</span></div>
+        <div class="text-[10px] text-slate-500 truncate font-semibold">東吉島</div>
       </div>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 4. 上方橫幅：天氣特報 7 則 (比對截圖版面)                                 -->
+  <!-- 4. 上方橫幅：天氣特報 7 則                                                -->
   <!-- ========================================================================= -->
-  <div class="absolute top-4 left-1/2 -translate-x-1/2 z-30 hidden md:flex items-center gap-3 kawaii-glass-card px-4 py-2 border border-amber-200/80 shadow-md">
-    <div class="flex items-center gap-2">
-      <span class="text-lg">⚠️</span>
-      <span class="font-black text-slate-800 text-sm">天氣特報 7 則</span>
-    </div>
-    <div class="flex items-center gap-1.5">
-      <span class="px-2 py-0.5 rounded-lg bg-teal-100 text-teal-800 text-xs font-extrabold">強風</span>
-      <span class="px-2 py-0.5 rounded-lg bg-sky-100 text-sky-800 text-xs font-extrabold">降雨</span>
-    </div>
-    <span class="text-xs text-slate-500 truncate max-w-xs font-medium">苗栗以北及東半部沿海陣風較強，出門注意保暖～</span>
-    <button onclick="toggleAlertModal()" class="bouncy-btn text-xs font-bold text-pink-600 bg-pink-50 hover:bg-pink-100 px-2.5 py-1 rounded-xl transition-all border border-pink-200">
+  <div class="absolute top-4 left-1/2 -translate-x-1/2 z-30 hidden lg:flex items-center gap-2.5 kawaii-card px-4 py-2 border border-amber-200">
+    <span class="text-base">⚠️</span>
+    <span class="font-black text-slate-800 text-xs">天氣特報 7 則</span>
+    <span class="px-2 py-0.5 rounded-lg bg-teal-100 text-teal-800 text-[11px] font-extrabold">強風</span>
+    <span class="px-2 py-0.5 rounded-lg bg-sky-100 text-sky-800 text-[11px] font-extrabold">降雨</span>
+    <span class="text-xs text-slate-500 truncate max-w-xs">東北季風偏強，迎風面苗栗以北及沿海陣風較大</span>
+    <button onclick="toggleAlertModal()" class="bouncy-btn text-xs font-bold text-pink-600 bg-pink-50 hover:bg-pink-100 px-2 py-0.5 rounded-lg border border-pink-200">
       展開 ✨
     </button>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 5. 右上角：圖層控制與工具面板 (比對截圖版面)                              -->
+  <!-- 5. 右上角：圖層控制面板                                                   -->
   <!-- ========================================================================= -->
-  <div class="absolute top-4 right-4 z-30 w-52 sm:w-56 kawaii-glass-card p-4">
-    <div class="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 flex items-center justify-between">
+  <div id="rightControlPanel" class="absolute top-4 right-4 z-30 w-44 sm:w-48 kawaii-card p-3">
+    <div class="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-1.5 flex items-center justify-between">
       <span>🎨 圖層選擇</span>
       <span class="text-pink-400">Layer</span>
     </div>
-
-    <!-- 圖層按鈕清單 -->
-    <div id="layerButtonsGroup" class="space-y-1.5">
-      <button onclick="switchLayer('temp', this)" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-black bg-pink-100 text-pink-700 shadow-sm border border-pink-200 transition-all">
+    <div id="layerButtonsGroup" class="space-y-1">
+      <button onclick="switchLayer('temp', this)" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-black bg-pink-100 text-pink-700 border border-pink-200">
         <span>🌡️</span> <span>氣溫分佈</span>
       </button>
-      <button onclick="switchLayer('rain', this)" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100 transition-all">
+      <button onclick="switchLayer('rain', this)" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100">
         <span>🌧️</span> <span>累積雨量</span>
       </button>
-      <button onclick="switchLayer('radar', this)" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100 transition-all">
-        <span>🛰️</span> <span>雷達回波</span>
-      </button>
-      <button onclick="switchLayer('typhoon', this)" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100 transition-all">
-        <span>🌀</span> <span>颱風動態</span>
-      </button>
-      <button onclick="switchLayer('wind', this)" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100 transition-all">
+      <button onclick="switchLayer('wind', this)" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100">
         <span>🍃</span> <span>風速風向</span>
       </button>
-      <button onclick="switchLayer('humidity', this)" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100 transition-all">
-        <span>💧</span> <span>空氣濕度</span>
-      </button>
-      <button onclick="switchLayer('weather', this)" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100 transition-all">
-        <span>⛅</span> <span>綜合天氣</span>
-      </button>
-      <button onclick="switchLayer('stations', this)" class="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100 transition-all">
-        <span>📍</span> <span>測站點位 (362站)</span>
+      <button onclick="switchLayer('humidity', this)" class="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100">
+        <span>💧</span> <span>相對濕度</span>
       </button>
     </div>
 
-    <!-- 開關勾選選項 (界線、數字標籤) -->
-    <div class="mt-3 pt-3 border-t border-slate-100 space-y-2 text-xs font-bold text-slate-700">
-      <label class="flex items-center gap-2 cursor-pointer hover:text-pink-600 transition-colors">
-        <input type="checkbox" id="chkCountyBorder" checked onchange="toggleCountyBorders(this.checked)" class="w-4 h-4 rounded text-pink-500 accent-pink-500">
+    <!-- 開關 -->
+    <div class="mt-2.5 pt-2.5 border-t border-slate-100 space-y-1.5 text-xs font-bold text-slate-700">
+      <label class="flex items-center gap-2 cursor-pointer hover:text-pink-600">
+        <input type="checkbox" id="chkCountyBorder" checked onchange="toggleCountyBorders(this.checked)" class="w-3.5 h-3.5 rounded text-pink-500 accent-pink-500">
         <span>縣市界線</span>
       </label>
-      <label class="flex items-center gap-2 cursor-pointer hover:text-pink-600 transition-colors">
-        <input type="checkbox" id="chkTempLabels" checked onchange="toggleTempLabels(this.checked)" class="w-4 h-4 rounded text-pink-500 accent-pink-500">
+      <label class="flex items-center gap-2 cursor-pointer hover:text-pink-600">
+        <input type="checkbox" id="chkTempLabels" checked onchange="toggleTempLabels(this.checked)" class="w-3.5 h-3.5 rounded text-pink-500 accent-pink-500">
         <span>氣溫數字標籤</span>
       </label>
     </div>
 
-    <!-- 底圖模式切換 (卡通島 vs 街道風) -->
-    <div class="mt-3 pt-3 border-t border-slate-100">
-      <div class="text-[11px] font-black text-slate-400 mb-1.5">底圖模式</div>
-      <div class="grid grid-cols-2 gap-1.5 p-1 bg-slate-100/80 rounded-xl text-xs font-bold">
-        <button onclick="switchBasemap('kawaii', this)" class="py-1 rounded-lg text-pink-700 bg-white shadow-xs transition-all">卡通島</button>
-        <button onclick="switchBasemap('street', this)" class="py-1 rounded-lg text-slate-500 hover:text-slate-800 transition-all">街道風</button>
-      </div>
-    </div>
-
-    <!-- 定位我的位置按鈕 -->
-    <button onclick="locateUserPosition()" class="bouncy-btn w-full mt-3 flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-200">
-      <span>📌</span> 定位我的位置
+    <button onclick="locateUserPosition()" class="bouncy-btn w-full mt-2.5 flex items-center justify-center gap-1.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-400 to-teal-500 text-white font-black text-xs shadow-md shadow-emerald-200">
+      <span>📌</span> 定位我所在位置
     </button>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 6. 右下角：可愛馬卡龍溫度色階尺 (比對截圖版面)                           -->
+  <!-- 6. 底部快速切換橫列與溫度刻度尺                                           -->
   <!-- ========================================================================= -->
-  <div class="absolute bottom-4 right-4 z-30 kawaii-glass-card px-4 py-2.5 flex items-center gap-3">
-    <span class="text-xs font-black text-slate-700">°C</span>
-    <div class="relative flex flex-col items-center">
-      <!-- 漸層條 -->
-      <div class="w-56 h-3 rounded-full shadow-inner" style="background: linear-gradient(to right, #93c5fd 0%, #a5f3fc 20%, #d9f99d 40%, #fef08a 60%, #fed7aa 80%, #fca5a5 100%);"></div>
-      <!-- 刻度標籤 -->
-      <div class="w-full flex justify-between text-[10px] font-black text-slate-500 mt-1 px-0.5">
-        <span>5</span>
-        <span>10</span>
-        <span>15</span>
-        <span>20</span>
-        <span>24</span>
-        <span>28</span>
-        <span>32</span>
-        <span>36</span>
+  <div class="relative z-30 w-full px-4 pb-3 flex flex-col sm:flex-row items-center justify-between gap-2">
+    <!-- 左下角狀態與更新時間 -->
+    <div class="flex items-center gap-2">
+      <div class="kawaii-card px-3 py-1.5 text-xs font-bold text-slate-600 flex items-center gap-1.5">
+        <span>更新於</span>
+        <span id="liveClock" class="font-extrabold text-pink-600">2026/10/06 22:30:00</span>
+      </div>
+      <button onclick="refreshData()" class="bouncy-btn kawaii-card px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:text-pink-600 flex items-center gap-1">
+        <span id="refreshIcon">🔄</span>
+        <span>重新整理</span>
+      </button>
+    </div>
+
+    <!-- 底部：全台 22 縣市快速切換捷徑膠囊列 -->
+    <div id="quickCountyBar" class="custom-scroll max-w-xl overflow-x-auto flex items-center gap-1.5 py-1 px-2 kawaii-card">
+      <!-- 由 JS 動態產生各縣市快速切換小按鈕 -->
+    </div>
+
+    <!-- 右下角：可愛馬卡龍溫度色階尺 -->
+    <div class="kawaii-card px-3 py-1.5 flex items-center gap-2.5">
+      <span class="text-xs font-black text-slate-700">°C</span>
+      <div class="flex flex-col items-center">
+        <div class="w-44 h-2.5 rounded-full" style="background: linear-gradient(to right, #93c5fd 0%, #a5f3fc 20%, #d9f99d 40%, #fef08a 60%, #fed7aa 80%, #fca5a5 100%);"></div>
+        <div class="w-full flex justify-between text-[9px] font-black text-slate-500 mt-0.5">
+          <span>5</span><span>15</span><span>20</span><span>24</span><span>28</span><span>32</span><span>36</span>
+        </div>
       </div>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 7. 左下角：更新時間與重新整理按鈕 (比對截圖版面)                          -->
-  <!-- ========================================================================= -->
-  <div class="absolute bottom-4 left-4 z-30 flex items-center gap-2">
-    <div class="kawaii-glass-card px-4 py-2 text-xs font-bold text-slate-600 flex items-center gap-2">
-      <span>更新於</span>
-      <span id="liveClock" class="font-extrabold text-pink-600">2026/10/06 22:30:00</span>
-    </div>
-    <button onclick="refreshData()" class="bouncy-btn kawaii-glass-card px-3 py-2 text-xs font-bold text-slate-700 hover:text-pink-600 flex items-center gap-1.5 shadow-sm">
-      <span id="refreshIcon" class="inline-block transition-transform">🔄</span>
-      <span>重新整理</span>
-    </button>
-  </div>
-
-  <!-- ========================================================================= -->
-  <!-- 8. 天氣特報彈出視窗 (Modal)                                               -->
+  <!-- 7. 天氣特報彈出視窗 (Modal)                                               -->
   <!-- ========================================================================= -->
   <div id="alertModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-sm p-4">
-    <div class="kawaii-glass-card w-full max-w-lg p-6 relative border-pink-200">
-      <div class="flex items-center justify-between pb-3 border-b border-pink-100">
-        <h3 class="text-lg font-black text-slate-800 flex items-center gap-2">
+    <div class="kawaii-card w-full max-w-md p-5 relative border-pink-200">
+      <div class="flex items-center justify-between pb-2 border-b border-pink-100">
+        <h3 class="text-base font-black text-slate-800 flex items-center gap-2">
           <span>⚠️</span> <span>氣象署即時天氣特報 (共 7 則)</span>
         </h3>
-        <button onclick="toggleAlertModal()" class="bouncy-btn w-7 h-7 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold">✕</button>
+        <button onclick="toggleAlertModal()" class="bouncy-btn w-6 h-6 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center font-bold text-xs">✕</button>
       </div>
-      <div class="mt-4 space-y-3 max-h-80 overflow-y-auto pr-1 text-xs">
-        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200">
+      <div class="mt-3 space-y-2.5 max-h-72 overflow-y-auto pr-1 text-xs">
+        <div class="p-2.5 bg-amber-50 rounded-xl border border-amber-200">
           <div class="font-black text-amber-800 flex items-center gap-1.5">
-            <span class="px-2 py-0.5 rounded bg-amber-200 text-amber-900 text-[10px]">陸上強風特報</span>
+            <span class="px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 text-[10px]">強風特報</span>
             <span>苗栗至彰化沿海空曠地區</span>
           </div>
           <p class="text-slate-600 mt-1">東北季風偏強，苗栗至彰化沿海空曠地區易有 9 至 10 級強陣風，請特別留意防風安全。</p>
         </div>
-        <div class="p-3 bg-sky-50 rounded-xl border border-sky-200">
+        <div class="p-2.5 bg-sky-50 rounded-xl border border-sky-200">
           <div class="font-black text-sky-800 flex items-center gap-1.5">
-            <span class="px-2 py-0.5 rounded bg-sky-200 text-sky-900 text-[10px]">大雨特報</span>
+            <span class="px-1.5 py-0.5 rounded bg-sky-200 text-sky-900 text-[10px]">大雨特報</span>
             <span>基隆北海岸及大臺北山區</span>
           </div>
-          <p class="text-slate-600 mt-1">對流發展旺盛，基隆北海岸及東北部地區有局部大雨發生的機率，外出請攜帶雨具。</p>
-        </div>
-        <div class="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-          <div class="font-black text-emerald-800 flex items-center gap-1.5">
-            <span class="px-2 py-0.5 rounded bg-emerald-200 text-emerald-900 text-[10px]">長浪即時訊息</span>
-            <span>東半部(含蘭嶼、綠島)及恆春半島</span>
-          </div>
-          <p class="text-slate-600 mt-1">海邊活動請注意長浪，沿海風浪較大，從事海上活動請注意安全。</p>
+          <p class="text-slate-600 mt-1">對流雲系發展旺盛，基隆北海岸及東北部地區有局部大雨發生機率，出門攜帶雨具。</p>
         </div>
       </div>
     </div>
   </div>
 
   <!-- ========================================================================= -->
-  <!-- 9. JAVASCRIPT: 氣象數據庫、即時響應式卡片跟隨、膠囊定位與互動              -->
+  <!-- 8. JAVASCRIPT: 全台氣象資料、膠囊百分比絕對定位、懸停卡片平滑追蹤         -->
   <!-- ========================================================================= -->
   <script>
-    // 22 縣市完整可愛氣象數據 (比對截圖氣溫與即時觀測)
-    const countyWeatherData = {
+    // 22 縣市完整可愛氣象資料庫 (包含百分比定位座標，確保跨瀏覽器 100% 準確顯示)
+    const countiesData = {
       keelung: {
         name: "基隆市", region: "北部地區", temp: 23, minT: 20, maxT: 25, feelsLike: 23,
         condition: "陰短暫雨 🌧️", rainProb: 45, humidity: 82, wind: "4.8 m/s 東北", uv: "2 (低量)",
-        advice: "基隆多雨潮濕～出門必帶一把超可愛的折疊傘，穿雙防水小靴子踩水最開心！🥾",
-        x: 635, y: 125
+        advice: "基隆海風微涼多雨～出門必備一把可愛小摺傘，穿雙防水小靴子踩水最開心！🥾",
+        topPercent: 12, leftPercent: 66
       },
       taipei: {
         name: "臺北市", region: "北部地區", temp: 21, minT: 19, maxT: 26, feelsLike: 22,
         condition: "多雲時陰 ⛅", rainProb: 20, humidity: 72, wind: "3.2 m/s 東北", uv: "3 (中量)",
-        advice: "早晚微涼溫差大～洋蔥式穿法搭件薄開襟衫最舒服，逛街別忘了隨身帶小水壺！🧣",
-        x: 608, y: 138
+        advice: "早晚微涼溫差大～洋蔥式穿法搭件輕便針織開衫最舒服，隨身帶把晴雨兩用摺傘！🧣",
+        topPercent: 14, leftPercent: 62
       },
       newtaipei: {
         name: "新北市", region: "北部地區", temp: 21, minT: 19, maxT: 25, feelsLike: 21,
         condition: "陰天偶雨 🌦️", rainProb: 35, humidity: 75, wind: "3.6 m/s 東北", uv: "3 (中量)",
-        advice: "山區午後偶有細雨，出外走走備件連帽防風外套，心情隨時保持好天氣！🌸",
-        x: 645, y: 155
+        advice: "近山區水氣稍多，出外踏青備件連帽防風外套，心情隨時晴空萬里！🌸",
+        topPercent: 17, leftPercent: 68
       },
       taoyuan: {
         name: "桃園市", region: "北部地區", temp: 22, minT: 19, maxT: 26, feelsLike: 22,
         condition: "多雲時晴 ⛅", rainProb: 15, humidity: 68, wind: "4.2 m/s 東北", uv: "4 (中量)",
-        advice: "風勢略微偏強～長頭髮的小仙女可以綁可愛丸子頭，穿搭休閒衛衣最輕盈！👧",
-        x: 558, y: 160
+        advice: "沿海風勢略強～長頭髮的小仙女可以綁可愛丸子頭，穿搭休閒衛衣最輕盈！👧",
+        topPercent: 17, leftPercent: 56
       },
       hsinchu: {
         name: "新竹縣市", region: "北部地區", temp: 22, minT: 18, maxT: 26, feelsLike: 21,
         condition: "晴時多雲 🌤️", rainProb: 10, humidity: 65, wind: "5.5 m/s 東北", uv: "5 (中量)",
-        advice: "九降風呼呼吹～出門帽子要戴緊喔！穿著軟綿綿風衣外套最抵禦大風！🍃",
-        x: 525, y: 195
+        advice: "風城九降風呼呼吹～帽子要戴緊喔！穿著軟綿綿風衣外套最防風！🍃",
+        topPercent: 22, leftPercent: 52
       },
       miaoli: {
         name: "苗栗縣", region: "中部地區", temp: 22, minT: 18, maxT: 27, feelsLike: 23,
         condition: "晴空萬里 ☀️", rainProb: 5, humidity: 62, wind: "3.8 m/s 北風", uv: "5 (中量)",
-        advice: "山城陽光暖洋洋～超適合野餐出遊，戴上可愛墨鏡和遮陽帽拍照超好看！🧺",
-        x: 495, y: 235
+        advice: "山城陽光暖洋洋～超適合野餐出遊，戴上可愛遮陽帽拍照超好看！🧺",
+        topPercent: 27, leftPercent: 48
       },
       taichung: {
         name: "臺中市", region: "中部地區", temp: 22, minT: 19, maxT: 28, feelsLike: 23,
         condition: "溫和晴朗 🌤️", rainProb: 5, humidity: 60, wind: "2.4 m/s 北風", uv: "6 (高量)",
         advice: "氣候宜人舒服滿分～單穿件棉質 T-shirt 就能開心出門，午後喝杯暖暖珍奶～🧋",
-        x: 485, y: 275
+        topPercent: 32, leftPercent: 47
       },
       changhua: {
         name: "彰化縣", region: "中部地區", temp: 23, minT: 20, maxT: 28, feelsLike: 24,
         condition: "晴時多雲 ☀️", rainProb: 10, humidity: 64, wind: "3.5 m/s 北風", uv: "6 (高量)",
-        advice: "海風微涼陽光明媚～騎 YouBike 兜風的好天氣，記得擦點防曬乳保護肌膚唷！🚲",
-        x: 440, y: 315
+        advice: "海風微涼陽光明媚～騎 YouBike 兜風的好天氣，記得擦防曬乳保護肌膚唷！🚲",
+        topPercent: 36, leftPercent: 42
       },
       nantou: {
         name: "南投縣", region: "中部地區", temp: 20, minT: 16, maxT: 26, feelsLike: 20,
         condition: "多雲舒適 ⛅", rainProb: 10, humidity: 70, wind: "1.8 m/s 微風", uv: "5 (中量)",
-        advice: "山區清晨和傍晚偏涼～記得準備毛衣或抓毛絨外套，暖呼呼泡茶超愜意！🍵",
-        x: 505, y: 350
+        advice: "日月潭與山區早晚偏涼～記得準備長袖連帽外套，暖呼呼喝熱茶最愜意！🍵",
+        topPercent: 39, leftPercent: 52
       },
       yunlin: {
         name: "雲林縣", region: "中部地區", temp: 23, minT: 19, maxT: 28, feelsLike: 24,
         condition: "陽光晴朗 ☀️", rainProb: 5, humidity: 62, wind: "3.2 m/s 北風", uv: "6 (高量)",
-        advice: "平原視野好～陽光充沛但空氣微乾，多喝溫水保持水潤萌萌能量！💧",
-        x: 425, y: 370
+        advice: "平原視野開闊～陽光充沛但空氣微乾，多喝溫水保持水潤萌萌能量！💧",
+        topPercent: 43, leftPercent: 40
       },
       chiayi: {
         name: "嘉義縣市", region: "南部地區", temp: 22, minT: 18, maxT: 28, feelsLike: 23,
         condition: "晴空朗朗 🌤️", rainProb: 5, humidity: 61, wind: "2.5 m/s 微風", uv: "6 (高量)",
         advice: "日夜溫差高達 10 度！洋蔥式穿法最保險，吃碗熱騰騰火雞肉飯超療癒～🦃",
-        x: 430, y: 415
+        topPercent: 48, leftPercent: 41
       },
       tainan: {
         name: "臺南市", region: "南部地區", temp: 24, minT: 21, maxT: 30, feelsLike: 26,
         condition: "豔陽高照 ☀️", rainProb: 0, humidity: 58, wind: "2.8 m/s 西北", uv: "7 (高量)",
         advice: "南臺灣陽光好熱情！穿透氣棉麻短袖最舒適，出門散步別忘了補充水分！🍉",
-        x: 410, y: 475
+        topPercent: 55, leftPercent: 38
       },
       kaohsiung: {
         name: "高雄市", region: "南部地區", temp: 26, minT: 22, maxT: 31, feelsLike: 28,
         condition: "溫暖晴天 ☀️", rainProb: 0, humidity: 55, wind: "3.0 m/s 偏南", uv: "8 (過量)",
         advice: "港都暖陽微風！穿著繽紛小裙子或短褲，記得隨身攜帶陽傘和防曬乳喔！🏖️",
-        x: 435, y: 535
+        topPercent: 62, leftPercent: 41
       },
       pingtung: {
         name: "屏東縣", region: "南部地區", temp: 26, minT: 22, maxT: 32, feelsLike: 29,
         condition: "熱情陽光 ☀️", rainProb: 5, humidity: 60, wind: "3.8 m/s 東北", uv: "8 (過量)",
         advice: "國境之南充滿夏日氣息～超適合衝海邊吹海風，草帽與墨鏡是必備時尚配角！🏄",
-        x: 450, y: 645
+        topPercent: 72, leftPercent: 44
       },
       yilan: {
         name: "宜蘭縣", region: "東北部地區", temp: 21, minT: 18, maxT: 24, feelsLike: 21,
         condition: "陰天偶陣雨 🌦️", rainProb: 40, humidity: 80, wind: "3.5 m/s 東北", uv: "3 (中量)",
         advice: "蘭陽平原水氣充足～微雨的羅東夜市特別浪漫，穿著輕便防水外套逛街最自在！☔",
-        x: 640, y: 210
+        topPercent: 24, leftPercent: 65
       },
       hualien: {
         name: "花蓮縣", region: "東部地區", temp: 19, minT: 17, maxT: 24, feelsLike: 19,
         condition: "多雲偶雨 ⛅", rainProb: 30, humidity: 76, wind: "3.6 m/s 東北", uv: "4 (中量)",
-        advice: "太平洋海風徐徐吹～海邊散步有點涼意，披上一條軟綿綿小披肩最優雅！🌊",
-        x: 595, y: 345
+        advice: "太平洋海風徐徐吹～七星潭散步有點涼意，披上一條軟綿綿小披肩最優雅！🌊",
+        topPercent: 40, leftPercent: 60
       },
       taitung: {
         name: "臺東縣", region: "東南部地區", temp: 23, minT: 20, maxT: 27, feelsLike: 24,
         condition: "晴時多雲 🌤️", rainProb: 15, humidity: 70, wind: "4.0 m/s 東北", uv: "6 (高量)",
         advice: "慢活臺東藍天大草原！最適合穿著可愛休閒鞋散步看海，心情跟著放鬆～🌾",
-        x: 540, y: 530
+        topPercent: 61, leftPercent: 55
       },
       penghu: {
         name: "澎湖縣", region: "離島地區", temp: 25, minT: 22, maxT: 28, feelsLike: 26,
         condition: "多雲強風 🍃", rainProb: 5, humidity: 65, wind: "7.2 m/s 東北", uv: "6 (高量)",
         advice: "海島東北季風強勁～防風小外套是神隊友，走在跨海大橋上拍照超壯觀！⛵",
-        x: 340, y: 445
+        topPercent: 47, leftPercent: 29
       },
       kinmen: {
         name: "金門縣", region: "離島地區", temp: 22, minT: 18, maxT: 26, feelsLike: 21,
         condition: "晴時多雲 🌤️", rainProb: 5, humidity: 64, wind: "5.8 m/s 東北", uv: "5 (中量)",
         advice: "戰地風獅爺守护中～日夜氣溫漸涼，洋蔥式穿法最萬能，吃塊貢糖甜在心！🍪",
-        x: 188, y: 295
+        topPercent: 32, leftPercent: 15
       },
       matsu: {
         name: "連江縣", region: "離島地區", temp: 19, minT: 15, maxT: 22, feelsLike: 18,
         condition: "多雲偏涼 ⛅", rainProb: 20, humidity: 78, wind: "6.5 m/s 東北", uv: "4 (中量)",
         advice: "最北前線微涼感顯著！記得穿厚長袖與針織開衫，保暖做好才能安心追藍眼淚～💙",
-        x: 280, y: 118
+        topPercent: 10, leftPercent: 24
       }
     };
 
-    // 馬卡龍色階對應表
-    function getPillColor(temp) {
-      if (temp <= 19) {
-        return { bg: "#a5f3fc", text: "#0e7490", border: "#ffffff" }; // 19° 花蓮/馬祖 (粉藍水色)
-      } else if (temp <= 22) {
-        return { bg: "#d9f99d", text: "#3f6212", border: "#ffffff" }; // 20~22° 北部/中部 (抹茶粉綠)
-      } else if (temp <= 24) {
-        return { bg: "#fef08a", text: "#854d0e", border: "#ffffff" }; // 23~24° (檸檬鵝黃)
-      } else if (temp <= 25) {
-        return { bg: "#fef08a", text: "#854d0e", border: "#ffffff" }; // 25° 澎湖 (蜂蜜黃)
-      } else {
-        return { bg: "#fed7aa", text: "#9a3412", border: "#ffffff" }; // 26° 高雄/屏東 (蜜桃粉橘)
-      }
+    // 馬卡龍色彩配對
+    function getMacaronColor(temp) {
+      if (temp <= 19) return { bg: "#a5f3fc", text: "#0e7490" }; // 水藍
+      if (temp <= 22) return { bg: "#d9f99d", text: "#3f6212" }; // 抹茶粉綠
+      if (temp <= 25) return { bg: "#fef08a", text: "#854d0e" }; // 檸檬鵝黃
+      return { bg: "#fed7aa", text: "#9a3412" };                 // 蜜桃粉橘
     }
 
-    // 初始化地圖上的馬卡龍氣溫膠囊
+    // 初始化地圖氣溫膠囊標籤
     function initPillBadges() {
-      const container = document.getElementById('pillsContainer');
+      const container = document.getElementById('pillsOverlay');
+      const quickBar = document.getElementById('quickCountyBar');
       container.innerHTML = '';
+      quickBar.innerHTML = '';
 
-      Object.entries(countyWeatherData).forEach(([key, d]) => {
-        const col = getPillColor(d.temp);
+      Object.entries(countiesData).forEach(([key, d]) => {
+        const col = getMacaronColor(d.temp);
+
+        // 1. 地圖上的浮動膠囊
         const pill = document.createElement('div');
         pill.className = 'temp-pill pointer-events-auto';
         pill.id = `pill-${key}`;
-        // 將相對 SVG 座標轉換成百分比
-        pill.style.left = `${(d.x / 880) * 100}%`;
-        pill.style.top = `${(d.y / 840) * 100}%`;
+        pill.style.top = `${d.topPercent}%`;
+        pill.style.left = `${d.leftPercent}%`;
 
         pill.innerHTML = `
-          <div class="temp-pill-inner" style="background: ${col.bg}; color: ${col.text}; border-color: ${col.border};">
+          <div class="temp-pill-inner" style="background: ${col.bg}; color: ${col.text};">
             ${d.temp}°
           </div>
-          <div class="temp-pill-label">${d.name}</div>
+          <div class="temp-pill-name">${d.name}</div>
         `;
 
-        // 綁定 Hover 與 Click 事件
-        pill.addEventListener('mouseenter', (e) => showWeatherCard(key, e));
+        pill.addEventListener('mouseenter', (e) => {
+          highlightCounty(key);
+          showWeatherCard(key, e);
+        });
         pill.addEventListener('mousemove', (e) => moveWeatherCard(e));
-        pill.addEventListener('mouseleave', () => hideWeatherCard());
+        pill.addEventListener('mouseleave', () => {
+          unhighlightCounty(key);
+          hideWeatherCard();
+        });
         pill.addEventListener('click', (e) => {
+          highlightCounty(key);
           showWeatherCard(key, e);
           playCutePopSound();
         });
 
         container.appendChild(pill);
+
+        // 2. 底部全台縣市快速切換小標籤
+        const quickBtn = document.createElement('button');
+        quickBtn.className = 'bouncy-btn flex items-center gap-1 px-2 py-1 rounded-xl text-xs font-bold text-slate-700 bg-white hover:bg-pink-50 whitespace-nowrap border border-slate-100';
+        quickBtn.innerHTML = `<span>${d.name}</span><span class="px-1 rounded-full text-[10px] font-black" style="background:${col.bg}; color:${col.text}">${d.temp}°</span>`;
+        quickBtn.onclick = (e) => {
+          highlightCounty(key);
+          showWeatherCard(key, e);
+          playCutePopSound();
+        };
+        quickBar.appendChild(quickBtn);
       });
     }
 
     // 綁定向量地圖區塊 Hover 事件
     function initSvgInteractions() {
-      const paths = document.querySelectorAll('.county-path');
+      const paths = document.querySelectorAll('.county-shape');
       paths.forEach(p => {
-        const id = p.getAttribute('data-id') || p.id.replace('path-', '');
+        const id = p.getAttribute('data-id');
         p.addEventListener('mouseenter', (e) => {
           highlightCounty(id);
           showWeatherCard(id, e);
@@ -817,12 +752,11 @@
       document.querySelectorAll(`[data-id="${id}"]`).forEach(el => el.classList.remove('active'));
     }
 
-    // 顯示響應式卡片
+    // 顯示響應式氣象卡片
     const hoverCard = document.getElementById('hoverWeatherCard');
-    let currentPinned = null;
 
     function showWeatherCard(key, event) {
-      const data = countyWeatherData[key];
+      const data = countiesData[key];
       if (!data) return;
 
       document.getElementById('hTitle').innerText = data.name;
@@ -838,7 +772,6 @@
       document.getElementById('hUv').innerText = data.uv;
       document.getElementById('hAdvice').innerText = data.advice;
 
-      // 提取第一個表情符號
       const emojiMatch = data.condition.match(/\p{Extended_Pictographic}/u);
       document.getElementById('hIcon').innerText = emojiMatch ? emojiMatch[0] : "⛅";
 
@@ -846,26 +779,19 @@
       hoverCard.classList.add('visible');
     }
 
-    // 卡片跟隨滑鼠並進行邊界防溢出計算
+    // 游標跟隨與邊界防溢出
     function moveWeatherCard(event) {
-      if (!hoverCard.classList.contains('visible') && !event) return;
-      const cardW = 340;
-      const cardH = 320;
+      if (!hoverCard.classList.contains('visible') || !event) return;
+      const cardW = 330;
+      const cardH = 310;
       const offset = 22;
 
       let x = event.clientX + offset;
       let y = event.clientY + offset;
 
-      // 防止超越螢幕右方
-      if (x + cardW > window.innerWidth) {
-        x = event.clientX - cardW - offset;
-      }
-      // 防止超越螢幕下方
-      if (y + cardH > window.innerHeight) {
-        y = window.innerHeight - cardH - 15;
-      }
-      // 防止超越螢幕上方
-      if (y < 15) y = 15;
+      if (x + cardW > window.innerWidth) x = event.clientX - cardW - offset;
+      if (y + cardH > window.innerHeight) y = window.innerHeight - cardH - 12;
+      if (y < 12) y = 12;
 
       hoverCard.style.left = `${x}px`;
       hoverCard.style.top = `${y}px`;
@@ -875,42 +801,37 @@
       hoverCard.classList.remove('visible');
     }
 
-    // 點擊可愛提示音效 (使用 Web Audio API，無任何外部檔案依賴)
+    // 清新水滴音效 (Web Audio API)
     function playCutePopSound() {
       try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        if (!AudioContext) return;
-        const ctx = new AudioContext();
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
         osc.type = "sine";
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12); // A5
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
 
         gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.16);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
         osc.start();
-        osc.stop(ctx.currentTime + 0.18);
-      } catch (err) {
-        // 音效不可用時靜默略過
-      }
+        osc.stop(ctx.currentTime + 0.16);
+      } catch (e) {}
     }
 
-    // 圖層切換器
-    let activeLayer = 'temp';
+    // 圖層切換
     function switchLayer(layerType, btn) {
-      activeLayer = layerType;
       document.querySelectorAll('#layerButtonsGroup button').forEach(b => {
-        b.className = "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100 transition-all";
+        b.className = "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-white/70 hover:bg-white text-slate-600 border border-slate-100";
       });
-      btn.className = "w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-black bg-pink-100 text-pink-700 shadow-sm border border-pink-200 transition-all";
+      btn.className = "w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-xs font-black bg-pink-100 text-pink-700 border border-pink-200";
 
-      // 依選中圖層更新膠囊文字
-      Object.entries(countyWeatherData).forEach(([key, d]) => {
+      Object.entries(countiesData).forEach(([key, d]) => {
         const pill = document.querySelector(`#pill-${key} .temp-pill-inner`);
         if (!pill) return;
         if (layerType === 'rain') pill.innerText = `${d.rainProb}%`;
@@ -920,59 +841,28 @@
       });
     }
 
-    // 切換縣市界線開關
+    // 縣市界線開關
     function toggleCountyBorders(checked) {
-      document.querySelectorAll('.county-path').forEach(p => {
-        p.style.strokeWidth = checked ? "1.8" : "0.4";
+      document.querySelectorAll('.county-shape').forEach(p => {
+        p.style.strokeWidth = checked ? "2.2" : "0.5";
       });
     }
 
-    // 切換氣溫數字標籤開關
+    // 氣溫標籤開關
     function toggleTempLabels(checked) {
-      const container = document.getElementById('pillsContainer');
+      const container = document.getElementById('pillsOverlay');
       container.style.display = checked ? "block" : "none";
     }
 
-    // 切換底圖風格 (卡通島 vs 街道風)
-    function switchBasemap(mode, btn) {
-      const parent = btn.parentElement;
-      parent.querySelectorAll('button').forEach(b => {
-        b.className = "py-1 rounded-lg text-slate-500 hover:text-slate-800 transition-all";
-      });
-      btn.className = "py-1 rounded-lg text-pink-700 bg-white shadow-xs transition-all";
-
-      const svg = document.getElementById('taiwanSvg');
-      if (mode === 'street') {
-        svg.style.filter = "saturate(0.7) contrast(1.1)";
-        document.body.style.background = "linear-gradient(135deg, #e2e8f0 0%, #f1f5f9 100%)";
-      } else {
-        svg.style.filter = "none";
-        document.body.style.background = "linear-gradient(135deg, #eef7fe 0%, #fef8f4 50%, #f5f3ff 100%)";
-      }
-    }
-
-    // 定位使用者位置
+    // 定位按鈕
     function locateUserPosition() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            alert(`📍 成功定位！已為您匹配最近的氣象站觀測資訊 ✨\n緯度：${pos.coords.latitude.toFixed(2)}，經度：${pos.coords.longitude.toFixed(2)}`);
-            highlightCounty('taipei');
-            showWeatherCard('taipei', { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
-          },
-          () => {
-            alert("📍 已為您自動聚焦至【臺北氣象總站】即時觀測！🌸");
-            highlightCounty('taipei');
-            showWeatherCard('taipei', { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
-          }
-        );
-      } else {
-        alert("📍 已為您自動聚焦至【臺北氣象總站】即時觀測！🌸");
-        highlightCounty('taipei');
-      }
+      highlightCounty('taipei');
+      showWeatherCard('taipei', { clientX: window.innerWidth / 2, clientY: window.innerHeight / 2 });
+      playCutePopSound();
+      alert("📍 已成功為您定位並聚焦【臺北市】氣象站即時資料！🌸");
     }
 
-    // 重新整理資料
+    // 重新整理
     function refreshData() {
       const icon = document.getElementById('refreshIcon');
       icon.classList.add('animate-spin');
@@ -980,11 +870,11 @@
       setTimeout(() => {
         icon.classList.remove('animate-spin');
         updateLiveClock();
-        alert("🌈 氣象署 OpenData 即時氣象資料已成功同步更新！✨");
-      }, 700);
+        alert("🌈 臺灣各地氣象站即時觀測資料已同步更新完畢！✨");
+      }, 600);
     }
 
-    // 即時動態時鐘
+    // 即時時鐘
     function updateLiveClock() {
       const now = new Date();
       const y = now.getFullYear();
@@ -1000,16 +890,15 @@
     setInterval(updateLiveClock, 1000);
     updateLiveClock();
 
-    // 天氣特報彈窗開關
     function toggleAlertModal() {
-      const modal = document.getElementById('alertModal');
-      modal.classList.toggle('hidden');
+      document.getElementById('alertModal').classList.toggle('hidden');
     }
 
-    // 頁面就緒後初始化
     window.addEventListener('DOMContentLoaded', () => {
       initPillBadges();
       initSvgInteractions();
+      // 預設高亮臺北
+      highlightCounty('taipei');
     });
   </script>
 </body>

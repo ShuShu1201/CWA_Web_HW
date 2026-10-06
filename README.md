@@ -1,6 +1,9 @@
 # Taiwan Weather Forecast (HW10 氣象預報系統)
 
-本專案為「HW10 Taiwan Weather Forecast」課程作業之完整實作。系統串接交通部中央氣象署 (CWA) Open Data API，動態擷取臺灣六大區域之一週氣溫預報資料，經由 Python 結構化解析清洗後存入 SQLite 資料庫，並透過 Streamlit 與 Matplotlib 打造互動式天氣儀表板，支援 Folium 地圖視覺化（可選功能）。
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FShuShu1201%2FCWA_Web_HW)
+[![GitHub Pages](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-brightgreen)](https://shushu1201.github.io/CWA_Web_HW/)
+
+本專案為「HW10 Taiwan Weather Forecast」課程作業之完整實作。系統串接交通部中央氣象署 (CWA) Open Data API，動態擷取臺灣六大區域之一週氣溫預報資料，經由 Python 結構化解析清洗後存入 SQLite 資料庫，並透過 Streamlit 與 Matplotlib 打造互動式天氣儀表板，支援 Folium 地圖視覺化（可選功能），同時提供一鍵部署至 Vercel 與 GitHub Pages 之現代化可愛風格天氣地圖 Web App。
 
 ---
 
